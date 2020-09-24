@@ -32,6 +32,17 @@ export function overwrite(options: docopt.DocOptions): boolean {
   return overwrite ? true : false;
 }
 
+export function deps(options: docopt.DocOptions): [string, string] {
+  const {
+    "--deps": depsTs,
+    "--deps-test": depsTestTs,
+  } = options;
+  return [
+    depsTs ? depsTs.toString() : "./deps.ts",
+    depsTestTs ? depsTestTs.toString() : "./deps-test.ts",
+  ];
+}
+
 export function fileNameComponents(
   fileName: string,
 ): { name: string; extensions: string[] } {

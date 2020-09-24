@@ -39,17 +39,6 @@ export function facetClassName(fileName: inflect.InflectableValue): string {
   );
 }
 
-export function deps(options: docopt.DocOptions): [string, string] {
-  const {
-    "--deps": depsTs,
-    "--deps-test": depsTestTs,
-  } = options;
-  return [
-    depsTs ? depsTs.toString() : "./deps.ts",
-    depsTestTs ? depsTestTs.toString() : "./deps-test.ts",
-  ];
-}
-
 export async function lhcFormsToCampaigns(
   options: docopt.DocOptions,
 ): Promise<true | void> {
@@ -71,7 +60,7 @@ export async function lhcFormsToCampaigns(
       console.error(`${pathSpec} is not a directory.`);
       return true;
     }
-    const [depsTs, depsTestTs] = deps(options);
+    const [depsTs, _] = cli.deps(options);
 
     for (const dirWE of fs.walkSync(pathSpec)) {
       if (dirWE.isDirectory) {
@@ -184,7 +173,7 @@ export async function lhcFormJsonToQualEvalFacet(
     const verbose = cli.isVerbose(options);
     const overwrite = cli.overwrite(options);
     const sourceSpec = lhcFormJsonSrcSpec.toString();
-    const [depsTs, depsTestTs] = deps(options);
+    const [depsTs, _] = cli.deps(options);
     for (const we of fs.expandGlobSync(sourceSpec)) {
       const fnc = cli.fileNameComponents(we.name);
       const tsGenFileName = cli.forceExtension(".ts", we, fnc);
@@ -230,7 +219,7 @@ export async function lhcFormJsonToTypedDataTs(
   if (jsonToTypedData && lhcFormJsonSrcSpec) {
     const verbose = cli.isVerbose(options);
     const sourceSpec = lhcFormJsonSrcSpec.toString();
-    const [depsTs, depsTestTs] = deps(options);
+    const [depsTs, _] = cli.deps(options);
     for (const we of fs.expandGlobSync(sourceSpec)) {
       const fnc = cli.fileNameComponents(we.name);
       const jsonValue = JSON.parse(Deno.readTextFileSync(we.path));
