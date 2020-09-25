@@ -16,9 +16,7 @@ export function determineVersion(
   if (matched) {
     return `v${matched.groups!["version"]}`;
   }
-  return `v0.0.0-remote${
-    isMain ? `.main(${importMetaURL} ${repoVersionRegExp})` : ""
-  }`;
+  return `v0.0.0-remote(no version tag/branch in ${importMetaURL})`;
 }
 
 export interface CommandHandler {
