@@ -1,5 +1,7 @@
 import { docopt, fs, path } from "./deps.ts";
 
+const repoVersionRegExp = /medigy\/governance@v?(?<version>\d+\.\d+\.\d+)/;
+
 export function determineVersion(
   importMetaURL: string,
   isMain?: boolean,
@@ -10,7 +12,13 @@ export function determineVersion(
   if (fs.existsSync(fileURL)) {
     return `v0.0.0-local${isMain ? ".main" : ""}`;
   }
-  return `v0.0.0-remote${isMain ? ".main" : ""}`;
+  const matched = importMetaURL.match(repoVersionRegExp);
+  if (matched) {
+    return `v${matched.groups!["version"]}`;
+  }
+  return `v0.0.0-remote${
+    isMain ? `.main(${importMetaURL} ${repoVersionRegExp})` : ""
+  }`;
 }
 
 export interface CommandHandler {

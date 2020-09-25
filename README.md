@@ -1,2 +1,3 @@
-# governance
-Artifacts to help define Medigy schemas and other information governance structures
+# Medigy Governance
+
+Artifacts to help define Medigy schemas and other information governance structures.
