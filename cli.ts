@@ -1,6 +1,6 @@
 import { docopt, fs, path } from "./deps.ts";
 
-const repoVersionRegExp = /medigy\/governance@v?(?<version>\d+\.\d+\.\d+)/;
+const repoVersionRegExp = /medigy\/governance\/v?(?<version>\d+\.\d+\.\d+)\//;
 
 export function determineVersion(
   importMetaURL: string,
