@@ -24,8 +24,18 @@ export async function validateEmail(
 export async function validateCompanyName(
   ctx: vlf.LhcFormValidationContext,
 ): Promise<vlf.LhcFormValidResult | vlf.LhcFormInvalidResult> {
-  if (!ctx.form.name) { //expecting ctx.form.items[].value with actual value
-    vlf.lformInvalid("Give error messages");
+  if (ctx.form.items) {
+    for (let index = 0; index < ctx.form.items?.length; index++) {
+      const element = ctx.form.items[index];
+      if (element.items) {
+        for (let index = 0; index < element.items?.length; index++) {
+          const childElement = element.items[index];
+          if (childElement.questionCode == "company-name") {
+            vlf.lformInvalid("Please provide a valid company name");
+          }
+        }
+      }
+    }
   }
   return vlf.lformValidationSuccess;
 }
@@ -34,10 +44,18 @@ export async function validateCompanyName(
 export async function validateCompanyEmail(
   ctx: vlf.LhcFormValidationContext,
 ): Promise<vlf.LhcFormValidResult | vlf.LhcFormInvalidResult> {
-  if (!ctx.form.name) {
-    vlf.lformInvalid("Give error messages");
-    //email vaildations
-    //Valid email format, Verify using https://email-checker.net/
+  if (ctx.form.items) {
+    for (let index = 0; index < ctx.form.items?.length; index++) {
+      const element = ctx.form.items[index];
+      if (element.items) {
+        for (let index = 0; index < element.items?.length; index++) {
+          const childElement = element.items[index];
+          if (childElement.questionCode == "Q002-05") {
+            vlf.lformInvalid("Please provide a valid company email");
+          }
+        }
+      }
+    }
   }
   return vlf.lformValidationSuccess;
 }
@@ -46,8 +64,18 @@ export async function validateCompanyEmail(
 export async function validateCompanyContact(
   ctx: vlf.LhcFormValidationContext,
 ): Promise<vlf.LhcFormValidResult | vlf.LhcFormInvalidResult> {
-  if (!ctx.form.name) {
-    vlf.lformInvalid("Give error messages");
+  if (ctx.form.items) {
+    for (let index = 0; index < ctx.form.items?.length; index++) {
+      const element = ctx.form.items[index];
+      if (element.items) {
+        for (let index = 0; index < element.items?.length; index++) {
+          const childElement = element.items[index];
+          if (childElement.questionCode == "Q002-06") {
+            vlf.lformInvalid("Please provide a valid company contact");
+          }
+        }
+      }
+    }
   }
   return vlf.lformValidationSuccess;
 }
@@ -68,7 +96,6 @@ export async function validateVendorEmail(
 ): Promise<vlf.LhcFormValidResult | vlf.LhcFormInvalidResult> {
   if (!ctx.form.name) {
     vlf.lformInvalid("Give error messages");
-    //Valid email format, Verify using https://email-checker.net/
   }
   return vlf.lformValidationSuccess;
 }
@@ -99,13 +126,12 @@ export async function validateOfferingWebsite(
 ): Promise<vlf.LhcFormValidResult | vlf.LhcFormInvalidResult> {
   if (!ctx.form.name) {
     vlf.lformInvalid("Give error messages");
-    //Valid URL format, Verify using https://email-checker.net/
   }
   return vlf.lformValidationSuccess;
 }
 
-// validate the offering Topics
-export async function validateOfferingTopics(
+// validate the offering categories
+export async function validateOfferingCategories(
   ctx: vlf.LhcFormValidationContext,
 ): Promise<vlf.LhcFormValidResult | vlf.LhcFormInvalidResult> {
   if (!ctx.form.name) {
@@ -121,18 +147,6 @@ export async function validateOfferingDescription(
   if (!ctx.form.name) {
     vlf.lformInvalid("Give error messages");
   }
-  //Validation Rules:Maximum 45 to 50 words without any spelling/grammar error
-  return vlf.lformValidationSuccess;
-}
-
-// validate the offering description
-export async function validateOfferingOneLiner(
-  ctx: vlf.LhcFormValidationContext,
-): Promise<vlf.LhcFormValidResult | vlf.LhcFormInvalidResult> {
-  if (!ctx.form.name) {
-    vlf.lformInvalid("Give error messages");
-  }
-  //Length of short description can be kept at 10 to 15 words
   return vlf.lformValidationSuccess;
 }
 
@@ -148,9 +162,8 @@ export class OfferingProfileValidator extends vlf.LhcFormValidationSupplier {
     validateOfferingName,
     validateOfferingType,
     validateOfferingWebsite,
-    validateOfferingTopics,
+    validateOfferingCategories,
     validateOfferingDescription,
-    validateOfferingOneLiner,
   ];
   static readonly singleton = new OfferingProfileValidator();
 
