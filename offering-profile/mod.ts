@@ -1,2 +1,2 @@
 export * from "./governance.ts";
-export * from "./validate.ts";
+export * from "./inspect.ts";
