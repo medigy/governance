@@ -1,6 +1,6 @@
-import type { IndividualProfile } from '../individual-profile/governance.ts';
-import type { InstitutionProfile } from '../institution-profile/governance.ts';
-import { governedInstr } from './deps.ts';
+import type { IndividualProfile } from "../individual-profile/governance.ts";
+import type { InstitutionProfile } from "../institution-profile/governance.ts";
+import { governedInstr } from "./deps.ts";
 
 export interface OfferingProfileConstructionContext
   extends governedInstr.TypicalInstrumentOptions {
@@ -11,22 +11,22 @@ export interface OfferingProfileConstructor {
   new (ctx: OfferingProfileConstructionContext): OfferingProfile;
 }
 export enum OfferingStatus {
-  APPROVED = 'Approved',
-  PENDING = 'Pending',
-  ARCHIVED = 'Archived',
+  APPROVED = "Approved",
+  PENDING = "Pending",
+  ARCHIVED = "Archived",
 }
 export enum OfferingType {
-  PRODUCT = 'Product',
-  SOLUTION = 'Solution',
-  SERVICE = 'Service',
+  PRODUCT = "Product",
+  SOLUTION = "Solution",
+  SERVICE = "Service",
 }
 export enum OfferingState {
-  CLOSED = 'closed',
-  OPENED = 'opened',
-  REOPENED = 'reopened',
+  CLOSED = "closed",
+  OPENED = "opened",
+  REOPENED = "reopened",
 }
-export type OfferingOwner = 'Yes' | 'No';
-export type OpensourceProduct = 'Yes' | 'No';
+export type OfferingOwner = "Yes" | "No";
+export type OpensourceProduct = "Yes" | "No";
 export interface Categories {
   [index: number]: string;
 }
