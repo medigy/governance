@@ -85,15 +85,15 @@ export class OfferingProfileLhcFormJsonTyper extends gd.TypicalJsonTyper {
     options: {
       govnDataModuleRef: string;
       govnDataModuleImportDirective: string;
-      medigyGovnModuleRef: string;
+      medigyGovnModuleTypeImportDirective: string;
     },
   ) {
     super(gd.defaultTypicalJsonTyperOptions(
       [
         options.govnDataModuleImportDirective,
-        `import type * as op from "${options.medigyGovnModuleRef}/offering-profile/lform.ts";`,
+        options.medigyGovnModuleTypeImportDirective,
       ],
-      "op.OfferingProfileLhcForm",
+      "medigyGovn.offerProfile.lf.OfferingProfileLhcForm",
       {
         instanceName: "profile",
         emittedFileExtn: ".lhc-form.auto.ts",

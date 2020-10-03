@@ -13,10 +13,10 @@ const docoptSpec = `
 Medigy Governance Controller ${$VERSION}.
 
 Usage:
-  mgctl offering-profile type <lform-json-src> [--validate] [--mg-home=<path>] [--mg-version=<semver>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
-  mgctl lform type <lform-json-src> [--dry-run] [--overwrite] [--validate] [--verbose] [--deps=<deps.ts>]
-  mgctl lform eval-facets <lform-json-src> [--verbose] [--overwrite] [--deps=<deps.ts>]
-  mgctl lform eval-facet-campaigns <start-path> <lform-json-src> [--verbose] [--overwrite] [--deps=<deps.ts>]
+  mgctl offering-profile type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
+  mgctl quant-eval type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
+  mgctl quant-eval type facet <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose]
+  mgctl quant-eval type campaigns <start-path> <lform-json-src> [--verbose] [--overwrite] [--deps=<deps.ts>]
   mgctl -h | --help
   mgctl --version
 
@@ -26,8 +26,8 @@ Options:
   <lform-json-src>            LHC Form JSON source(s) glob (like "**/*.lhc-form.json")
   <start-path>                Starting path to search for LHC Form JSON sources
   --validate                  Check the generated TypeScript file(s)
-  --mg-home=<path>            Absolute or relative path of the Medigy Governance library
-  --mg-version=<semver>       Version of Medigy Governance schemas to use (ignored if --mg-home provided)
+  --mg-mod-ref=<path>         Absolute or relative path of the Medigy Governance *.mod.ts to use
+  --mg-mod-deps=<deps.ts>     Relative path to the deps.ts file which includes reference to '{ medigyGovn }' (ignored if --mg-mod-ref provided)
   --gd-mod-ref=<path>         Absolute or relative path of the GovSuite GSD module to use
   --gd-mod-deps=<deps.ts>     Relative path to the deps.ts file for access GovSuite GSD 'govnData' module (ignored if --gd-mod-ref provided)
   --persist-on-error          Saves the generated *.auto.ts file on error
@@ -39,7 +39,11 @@ Options:
 export function govnDataModuleImportDirective(
   { "--gd-mod-ref": moduleRef, "--gd-mod-deps": depsTs }:
     gdctl.docopt.DocOptions,
-): { govnDataModuleRef: string; govnDataModuleImportDirective: string } {
+): {
+  govnDataModuleRef: string;
+  govnDataModuleImportDirective: string;
+  govnDataModuleTypeImportDirective: string;
+} {
   return {
     govnDataModuleRef: moduleRef
       ? moduleRef.toString()
@@ -49,19 +53,36 @@ export function govnDataModuleImportDirective(
       : `import { govnData } from "${
         depsTs ? depsTs.toString() : "./deps.ts"
       }";`,
+    govnDataModuleTypeImportDirective: moduleRef
+      ? `import type * as govnData from "${moduleRef}";`
+      : `import type { govnData } from "${
+        depsTs ? depsTs.toString() : "./deps.ts"
+      }";`,
   };
 }
 
 export function medigyGovnModuleRef(
-  { "--mg-home": medigyGovnHome, "--mg-version": medigyGovnSemVer }:
+  { "--mg-mod-ref": moduleRef, "--mg-mod-deps": depsTs }:
     gdctl.docopt.DocOptions,
-): { medigyGovnModuleRef: string } {
+): {
+  medigyGovnModuleImportDirective: string;
+  medigyGovnModuleTypeImportDirective: string;
+  medigyGovnModuleRef: string;
+} {
   return {
-    medigyGovnModuleRef: medigyGovnHome
-      ? medigyGovnHome.toString()
-      : `https://denopkg.com/medigy/governance${
-        medigyGovnSemVer ? `@${medigyGovnSemVer.toString()}` : ""
-      }`,
+    medigyGovnModuleRef: moduleRef
+      ? moduleRef.toString()
+      : "https://denopkg.com/medigy/governance/mod.ts",
+    medigyGovnModuleImportDirective: moduleRef
+      ? `import * as medigyGovn from "${moduleRef}";`
+      : `import { medigyGovn } from "${
+        depsTs ? depsTs.toString() : "./deps.ts"
+      }";`,
+    medigyGovnModuleTypeImportDirective: moduleRef
+      ? `import type * as medigyGovn from "${moduleRef}";`
+      : `import type { medigyGovn } from "${
+        depsTs ? depsTs.toString() : "./deps.ts"
+      }";`,
   };
 }
 
@@ -76,65 +97,30 @@ export function validateEmitted(result: gd.StructuredDataTyperResult): void {
   }
 }
 
-export class LhcFormJsonTyper extends gd.TypicalJsonTyper {
-  constructor({ "--deps": depsTs }: gdctl.docopt.DocOptions) {
-    super(gd.defaultTypicalJsonTyperOptions(
-      [
-        `import { nihLhcForms as lform, govnData } from "${
-          depsTs ? depsTs.toString() : "./deps.ts"
-        }";`,
-      ],
-      "lform.NihLhcForm",
-      { instanceName: "form", emittedFileExtn: ".lhc-form.auto.ts" },
-    ));
-  }
-}
-
-export class LhcFormEvalFacetTyper extends lform.LhcFormContainer {
-  readonly depsTs: string;
-
-  static facetClassName(fileNameIV: inflect.InflectableValue): string {
-    return gd.typeScriptClassName(
-      fileNameIV,
-      { forceSuffix: "Facet", removeSuffixes: ["EvaluationFacet"] },
-    );
-  }
-
-  constructor({ "--deps": depsTs }: gdctl.docopt.DocOptions) {
-    super();
-    this.depsTs = depsTs ? depsTs.toString() : "./deps.ts";
-  }
-
-  className(fileNameIV: inflect.InflectableValue, fc: gd.FileContext): string {
-    return LhcFormEvalFacetTyper.facetClassName(fileNameIV);
-  }
-
-  protected typerContent(
-    ctx: gd.JsonTyperContext,
-    fc: gd.FileContext,
-  ): string {
-    const iv = inflect.guessCaseValue(fc.fileNameWithoutExtn);
-    const className = this.className(iv, fc);
-    const lhcFormModuleRel = path.relative(
-      path.dirname(this.destFileName(fc)),
-      fc.forceExtension(".lhc-form.auto.ts"),
-    );
-    return `
-    import { medigyGovn as mg } from "${this.depsTs}";
-    import lhcFormJsonModule from "./${lhcFormModuleRel}";
-
-    // deno-lint-ignore no-empty-interface
-    export interface ${className}ConstructionContext extends mg.quantEval.EvalFacetConstructionContext {}
-
-    export class ${className} extends mg.quantEval.EvaluationFacet {
-      constructor(ctx?: ${className}ConstructionContext) {
-        super({ ...ctx, nihlhcForm: lhcFormJsonModule });
-      }
-    }
-
-    export default ${className};
-    `.replaceAll(/^ {8}/gm, ""); // remove indendation
-  }
+export async function typeLhcFormJSON(
+  ctx: gd.CliCmdHandlerContext,
+  typer: gd.TypicalJsonTyper,
+): Promise<void> {
+  const {
+    "<lform-json-src>": lformJsonSpec,
+    "--validate": validate,
+  } = ctx.cliOptions;
+  const ctl = new gd.TypicalController(
+    ctx.calledFromMetaURL,
+    {
+      ...ctx.tco,
+      defaultJsonExtn: ".lch-form.auto.json",
+      onAfterEmit: (result: gd.StructuredDataTyperResult): void => {
+        if (validate && !ctx.isDryRun) validateEmitted(result);
+      },
+    },
+  );
+  ctl.jsonType({
+    jsonSrcSpec: lformJsonSpec?.toString() || "**/*.json",
+    typer: typer,
+    verbose: ctx.isVerbose || ctx.isDryRun,
+    overwrite: ctx.shouldOverwrite,
+  });
 }
 
 export async function offeringProfileLhcFormJsonTyperCliHandler(
@@ -143,59 +129,38 @@ export async function offeringProfileLhcFormJsonTyperCliHandler(
   const {
     "offering-profile": offeringProfile,
     "type": type,
+    "lform": lform,
     "<lform-json-src>": lformJsonSpec,
-    "--validate": validate,
   } = ctx.cliOptions;
-  if (offeringProfile && type && lformJsonSpec) {
-    const ctl = new gd.TypicalController(
-      ctx.calledFromMetaURL,
-      {
-        ...ctx.tco,
-        defaultJsonExtn: ".lch-form.auto.json",
-        onAfterEmit: (result: gd.StructuredDataTyperResult): void => {
-          if (validate && !ctx.isDryRun) validateEmitted(result);
-        },
-      },
-    );
-    ctl.jsonType({
-      jsonSrcSpec: lformJsonSpec?.toString() || "**/*.json",
-      typer: new mod.offerProfile.lf.OfferingProfileLhcFormJsonTyper({
+  if (offeringProfile && type && lform && lformJsonSpec) {
+    typeLhcFormJSON(
+      ctx,
+      new mod.offerProfile.lf.OfferingProfileLhcFormJsonTyper({
         ...govnDataModuleImportDirective(ctx.cliOptions),
         ...medigyGovnModuleRef(ctx.cliOptions),
       }),
-      verbose: ctx.isVerbose || ctx.isDryRun,
-      overwrite: ctx.shouldOverwrite,
-    });
+    );
     return true;
   }
 }
 
-export async function lhcFormJsonTyperCliHandler(
+export async function quantEvalFacetLhcFormJsonTyperCliHandler(
   ctx: gd.CliCmdHandlerContext,
 ): Promise<true | void> {
   const {
-    "lform": json,
+    "quant-eval": quantEval,
     "type": type,
+    "lform": lform,
     "<lform-json-src>": lformJsonSpec,
-    "--validate": validate,
   } = ctx.cliOptions;
-  if (json && type && lformJsonSpec) {
-    const ctl = new gd.TypicalController(
-      ctx.calledFromMetaURL,
-      {
-        ...ctx.tco,
-        defaultJsonExtn: ".lch-form.auto.json",
-        onAfterEmit: (result: gd.StructuredDataTyperResult): void => {
-          if (validate && !ctx.isDryRun) validateEmitted(result);
-        },
-      },
+  if (quantEval && type && lform && lformJsonSpec) {
+    typeLhcFormJSON(
+      ctx,
+      new mod.quantEval.lf.QuantEvalFacetLhcFormJsonTyper({
+        ...govnDataModuleImportDirective(ctx.cliOptions),
+        ...medigyGovnModuleRef(ctx.cliOptions),
+      }),
     );
-    ctl.jsonType({
-      jsonSrcSpec: lformJsonSpec?.toString() || "**/*.json",
-      typer: new LhcFormJsonTyper(ctx.cliOptions),
-      verbose: ctx.isVerbose || ctx.isDryRun,
-      overwrite: ctx.shouldOverwrite,
-    });
     return true;
   }
 }
@@ -204,14 +169,19 @@ export async function lhcFormEvalFacetCliHandler(
   ctx: gd.CliCmdHandlerContext,
 ): Promise<true | void> {
   const {
-    "lform": json,
-    "eval-facets": evalFacets,
+    "quant-eval": quantEval,
+    "type": type,
+    "facet": facet,
     "<lform-json-src>": lformJsonSpec,
     "--validate": validate,
   } = ctx.cliOptions;
-  if (json && evalFacets && lformJsonSpec) {
+  if (quantEval && type && facet && lformJsonSpec) {
     const emitter = new gd.TypedDataFileSystemEmitter(
-      [new LhcFormEvalFacetTyper(ctx.cliOptions)],
+      [
+        new mod.quantEval.EvaluationFacetTyper(
+          medigyGovnModuleRef(ctx.cliOptions),
+        ),
+      ],
     );
     emitter.emitTypedData({
       udSupplier: new gd.FileSystemGlobSupplier(lformJsonSpec.toString()),
@@ -296,7 +266,9 @@ export async function lhcFormsToEvalFacetCampaignsCliHandler(
           }
           const gweCtx = gd.FileSystemGlobSupplier.globWalkEntryContext(we);
           const formIV = inflect.guessCaseValue(gweCtx.fileNameWithoutExtn);
-          const className = LhcFormEvalFacetTyper.facetClassName(formIV);
+          const className = mod.quantEval.EvaluationFacetTyper.facetClassName(
+            formIV,
+          );
           imports.push(
             `import { ${className} } from "./${gweCtx.fileNameWithoutExtn}.ts";`,
           );
@@ -367,7 +339,7 @@ if (import.meta.main) {
     docoptSpec,
     [
       offeringProfileLhcFormJsonTyperCliHandler,
-      lhcFormJsonTyperCliHandler,
+      quantEvalFacetLhcFormJsonTyperCliHandler,
       lhcFormEvalFacetCliHandler,
       lhcFormsToEvalFacetCampaignsCliHandler,
     ],
