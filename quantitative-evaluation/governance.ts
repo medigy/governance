@@ -4,6 +4,7 @@ import {
   nihLhcForms as lform,
   path,
   governedInstr,
+  fs,
 } from "./deps.ts";
 
 // deno-lint-ignore no-empty-interface
@@ -76,5 +77,130 @@ export class EvaluationFacetTyper extends lform.LhcFormContainer {
 
     export default ${className};
     `.replaceAll(/^ {8}/gm, ""); // remove indendation
+  }
+}
+
+export async function EvaluationFacetCampaignsTyper(
+  {
+    startPath,
+    lhcFormJsonSrcSpec,
+    verbose,
+    overwrite,
+    medigyGovnModuleImportDirective,
+  }: {
+    startPath: string;
+    lhcFormJsonSrcSpec: string;
+    medigyGovnModuleImportDirective: string;
+    verbose?: boolean;
+    overwrite?: boolean;
+  },
+): Promise<void> {
+  if (!fs.existsSync(startPath)) {
+    console.error(`${startPath} does not exist.`);
+    return;
+  }
+  const stat = Deno.statSync(startPath);
+  if (!stat.isDirectory) {
+    console.error(`${startPath} is not a directory.`);
+    return;
+  }
+
+  for (const dirWE of fs.walkSync(startPath)) {
+    if (dirWE.isDirectory) {
+      const dirIV = inflect.guessCaseValue(dirWE.name);
+      const facetsMgrFileName = path.join(
+        dirWE.path,
+        `${inflect.toKebabCase(dirIV)}-facets.ts`,
+      );
+      const facetsMgrClassName = inflect.toPascalCase(dirIV) + "Facets";
+      const modFileName = path.join(dirWE.path, "mod.ts");
+      if (fs.existsSync(modFileName) && !overwrite) {
+        console.warn(
+          `${modFileName} exists, use --overwrite to replace it.`,
+        );
+        continue;
+      }
+
+      const imports: string[] = [];
+      const exports: string[] = [];
+      const instanceDecls: string[] = [];
+      const instanceAssgns: string[] = [];
+      const instanceRegisters: string[] = [];
+      const facets: string[] = [];
+      const jsonSpec = path.join(
+        dirWE.path,
+        lhcFormJsonSrcSpec ? lhcFormJsonSrcSpec.toString() : "*.lhc-form.json",
+      );
+      for (const we of fs.expandGlobSync(jsonSpec)) {
+        if (
+          dirWE.path != path.dirname(path.relative(startPath, we.path))
+        ) {
+          continue;
+        }
+        const gweCtx = gd.FileSystemGlobSupplier.globWalkEntryContext(we);
+        const formIV = inflect.guessCaseValue(gweCtx.fileNameWithoutExtn);
+        const className = EvaluationFacetTyper.facetClassName(
+          formIV,
+        );
+        imports.push(
+          `import { ${className} } from "./${gweCtx.fileNameWithoutExtn}.ts";`,
+        );
+        instanceDecls.push(
+          `  readonly ${inflect.toCamelCase(formIV)}: ${className};`,
+        );
+        instanceAssgns.push(
+          `  this.${inflect.toCamelCase(formIV)} = new ${className}();`,
+        );
+        instanceRegisters.push(
+          `  this.instruments.push(this.${inflect.toCamelCase(formIV)});`,
+        );
+        exports.push(
+          `export * as ${
+            inflect.toCamelCase(formIV)
+          } from "./${gweCtx.fileNameWithoutExtn}.ts";`,
+        );
+        facets.push(className);
+      }
+      if (imports.length > 0) {
+        const managerCode = `
+          ${medigyGovnModuleImportDirective};
+
+          ${imports.join("\n")}
+
+          // deno-lint-ignore no-empty-interface
+          export interface ${facetsMgrClassName}ConstructionContext extends medigyGovn.quantEval.EvalFacetsConstructionContext {}
+
+          export class ${facetsMgrClassName} extends medigyGovn.quantEval.EvaluationFacets {
+            static readonly facets: readonly medigyGovn.quantEval.EvalFacetConstructor[] = [
+              ${facets.join(", ")}
+            ];
+            ${instanceDecls.join("\n")}
+
+            constructor(ctx: ${facetsMgrClassName}ConstructionContext) {
+              super({ ...ctx,
+                identity: "${inflect.toHumanCase(dirIV)}",
+                path: ctx.path.childPath("${dirWE.name}"),
+              });
+              ${instanceAssgns.join("\n")}
+              ${instanceRegisters.join("\n")}
+            }
+          }
+
+          export default ${facetsMgrClassName};
+          `;
+        exports.push(
+          `export * from "./${path.basename(facetsMgrFileName)}";`,
+        );
+        Deno.writeTextFileSync(facetsMgrFileName, managerCode);
+        Deno.writeTextFileSync(modFileName, exports.join("\n"));
+        if (verbose) console.log(modFileName);
+      } else {
+        if (verbose) {
+          console.log(
+            `No LHC Form JSON files in ${dirWE.path}, ${facetsMgrFileName} and ${modFileName} not created.`,
+          );
+        }
+      }
+    }
   }
 }

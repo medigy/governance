@@ -1,11 +1,4 @@
-import {
-  govnData as gd,
-  govnDataCLI as gdctl,
-  inflect,
-  nihLhcForms as lform,
-  path,
-  fs,
-} from "./deps.ts";
+import { govnData as gd, govnDataCLI as gdctl, path } from "./deps.ts";
 import * as mod from "./mod.ts";
 
 const $VERSION = gdctl.determineVersion(import.meta.url, import.meta.main);
@@ -16,7 +9,7 @@ Usage:
   mgctl offering-profile type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
   mgctl quant-eval type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
   mgctl quant-eval type facet <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose]
-  mgctl quant-eval type campaigns <start-path> <lform-json-src> [--verbose] [--overwrite] [--deps=<deps.ts>]
+  mgctl quant-eval type campaigns <start-path> <lform-json-src> [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--verbose] [--overwrite]
   mgctl -h | --help
   mgctl --version
 
@@ -165,7 +158,7 @@ export async function quantEvalFacetLhcFormJsonTyperCliHandler(
   }
 }
 
-export async function lhcFormEvalFacetCliHandler(
+export async function quantEvalFacetTyperCliHandler(
   ctx: gd.CliCmdHandlerContext,
 ): Promise<true | void> {
   const {
@@ -206,130 +199,24 @@ export async function lhcFormEvalFacetCliHandler(
   }
 }
 
-export async function lhcFormsToEvalFacetCampaignsCliHandler(
+export async function quantEvalCampaignsTyperCliHandler(
   ctx: gd.CliCmdHandlerContext,
 ): Promise<true | void> {
   const {
-    "lform": lform,
-    "eval-facet-campaigns": campaigns,
+    "quant-eval": quantEval,
+    "type": type,
+    "campaigns": campaigns,
     "<start-path>": startPathSpec,
-    "<lhc-json-src>": lhcFormJsonSrcSpec,
-    "--deps": depsTs,
+    "<lform-json-src>": lhcFormJsonSrcSpec,
   } = ctx.cliOptions;
-  if (lform && campaigns && startPathSpec) {
-    const verbose = ctx.isVerbose;
-    const overwrite = ctx.shouldOverwrite;
-    const pathSpec = startPathSpec.toString();
-    if (!fs.existsSync(pathSpec)) {
-      console.error(`${pathSpec} does not exist.`);
-      return true;
-    }
-    const stat = Deno.statSync(pathSpec);
-    if (!stat.isDirectory) {
-      console.error(`${pathSpec} is not a directory.`);
-      return true;
-    }
-
-    for (const dirWE of fs.walkSync(pathSpec)) {
-      if (dirWE.isDirectory) {
-        const dirIV = inflect.guessCaseValue(dirWE.name);
-        const facetsMgrFileName = path.join(
-          dirWE.path,
-          `${inflect.toKebabCase(dirIV)}-facets.ts`,
-        );
-        const facetsMgrClassName = inflect.toPascalCase(dirIV) + "Facets";
-        const modFileName = path.join(dirWE.path, "mod.ts");
-        if (fs.existsSync(modFileName) && !overwrite) {
-          console.warn(
-            `${modFileName} exists, use --overwrite to replace it.`,
-          );
-          continue;
-        }
-
-        const imports: string[] = [];
-        const exports: string[] = [];
-        const instanceDecls: string[] = [];
-        const instanceAssgns: string[] = [];
-        const instanceRegisters: string[] = [];
-        const facets: string[] = [];
-        const jsonSpec = path.join(
-          dirWE.path,
-          lhcFormJsonSrcSpec
-            ? lhcFormJsonSrcSpec.toString()
-            : "*.lhc-form.json",
-        );
-        for (const we of fs.expandGlobSync(jsonSpec)) {
-          if (
-            dirWE.path != path.dirname(path.relative(pathSpec, we.path))
-          ) {
-            continue;
-          }
-          const gweCtx = gd.FileSystemGlobSupplier.globWalkEntryContext(we);
-          const formIV = inflect.guessCaseValue(gweCtx.fileNameWithoutExtn);
-          const className = mod.quantEval.EvaluationFacetTyper.facetClassName(
-            formIV,
-          );
-          imports.push(
-            `import { ${className} } from "./${gweCtx.fileNameWithoutExtn}.ts";`,
-          );
-          instanceDecls.push(
-            `  readonly ${inflect.toCamelCase(formIV)}: ${className};`,
-          );
-          instanceAssgns.push(
-            `  this.${inflect.toCamelCase(formIV)} = new ${className}();`,
-          );
-          instanceRegisters.push(
-            `  this.instruments.push(this.${inflect.toCamelCase(formIV)});`,
-          );
-          exports.push(
-            `export * as ${
-              inflect.toCamelCase(formIV)
-            } from "./${gweCtx.fileNameWithoutExtn}.ts";`,
-          );
-          facets.push(className);
-        }
-        if (imports.length > 0) {
-          const managerCode = `
-          import { medigyGovn as mg } from "${depsTs}";
-
-          ${imports.join("\n")}
-
-          // deno-lint-ignore no-empty-interface
-          export interface ${facetsMgrClassName}ConstructionContext extends mg.quantEval.EvalFacetsConstructionContext {}
-
-          export class ${facetsMgrClassName} extends mg.quantEval.EvaluationFacets {
-            static readonly facets: readonly mg.quantEval.EvalFacetConstructor[] = [
-              ${facets.join(", ")}
-            ];
-            ${instanceDecls.join("\n")}
-
-            constructor(ctx: ${facetsMgrClassName}ConstructionContext) {
-              super({ ...ctx,
-                identity: "${inflect.toHumanCase(dirIV)}",
-                path: ctx.path.childPath("${dirWE.name}"),
-              });
-              ${instanceAssgns.join("\n")}
-              ${instanceRegisters.join("\n")}
-            }
-          }
-
-          export default ${facetsMgrClassName};
-          `;
-          exports.push(
-            `export * from "./${path.basename(facetsMgrFileName)}";`,
-          );
-          Deno.writeTextFileSync(facetsMgrFileName, managerCode);
-          Deno.writeTextFileSync(modFileName, exports.join("\n"));
-          if (verbose) console.log(modFileName);
-        } else {
-          if (verbose) {
-            console.log(
-              `No LHC Form JSON files in ${dirWE.path}, ${facetsMgrFileName} and ${modFileName} not created.`,
-            );
-          }
-        }
-      }
-    }
+  if (quantEval && type && campaigns && startPathSpec && lhcFormJsonSrcSpec) {
+    mod.quantEval.EvaluationFacetCampaignsTyper({
+      ...medigyGovnModuleRef(ctx.cliOptions),
+      startPath: startPathSpec.toString(),
+      lhcFormJsonSrcSpec: lhcFormJsonSrcSpec.toString(),
+      overwrite: ctx.shouldOverwrite,
+      verbose: ctx.isVerbose,
+    });
     return true;
   }
 }
@@ -340,8 +227,8 @@ if (import.meta.main) {
     [
       offeringProfileLhcFormJsonTyperCliHandler,
       quantEvalFacetLhcFormJsonTyperCliHandler,
-      lhcFormEvalFacetCliHandler,
-      lhcFormsToEvalFacetCampaignsCliHandler,
+      quantEvalFacetTyperCliHandler,
+      quantEvalCampaignsTyperCliHandler,
     ],
     (options: gdctl.docopt.DocOptions): gd.CliCmdHandlerContext => {
       return new gd.CliCmdHandlerContext(
