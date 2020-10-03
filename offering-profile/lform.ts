@@ -83,6 +83,7 @@ export interface OfferingProfileLhcForm extends lf.NihLhcForm {
 export class OfferingProfileLhcFormJsonTyper extends gd.TypicalJsonTyper {
   constructor(
     options: {
+      govnDataModuleRef: string;
       govnDataModuleImportDirective: string;
       medigyGovnModuleRef: string;
     },
@@ -93,7 +94,11 @@ export class OfferingProfileLhcFormJsonTyper extends gd.TypicalJsonTyper {
         `import type * as op from "${options.medigyGovnModuleRef}/offering-profile/lform.ts";`,
       ],
       "op.OfferingProfileLhcForm",
-      { instanceName: "profile", emittedFileExtn: ".lhc-form.auto.ts" },
+      {
+        instanceName: "profile",
+        emittedFileExtn: ".lhc-form.auto.ts",
+        govnDataImportURL: options.govnDataModuleRef,
+      },
     ));
   }
 }

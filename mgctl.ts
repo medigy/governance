@@ -39,8 +39,11 @@ Options:
 export function govnDataModuleImportDirective(
   { "--gd-mod-ref": moduleRef, "--gd-mod-deps": depsTs }:
     gdctl.docopt.DocOptions,
-): { govnDataModuleImportDirective: string } {
+): { govnDataModuleRef: string; govnDataModuleImportDirective: string } {
   return {
+    govnDataModuleRef: moduleRef
+      ? moduleRef.toString()
+      : "https://denopkg.com/gov-suite/governed-structured-data/mod.ts",
     govnDataModuleImportDirective: moduleRef
       ? `import * as govnData from "${moduleRef}";`
       : `import { govnData } from "${
