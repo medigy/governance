@@ -6,15 +6,17 @@ import {
   path,
   fs,
 } from "./deps.ts";
+import * as mod from "./mod.ts";
 
 const $VERSION = gdctl.determineVersion(import.meta.url, import.meta.main);
 const docoptSpec = `
 Medigy Governance Controller ${$VERSION}.
 
 Usage:
+  mgctl offering-profile type <lform-json-src> [--validate] [--mg-home=<path>] [--mg-version=<semver>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
   mgctl lform type <lform-json-src> [--dry-run] [--overwrite] [--validate] [--verbose] [--deps=<deps.ts>]
   mgctl lform eval-facets <lform-json-src> [--verbose] [--overwrite] [--deps=<deps.ts>]
-  mgctl lform campaigns <start-path> <lform-json-src> [--verbose] [--overwrite] [--deps=<deps.ts>]
+  mgctl lform eval-facet-campaigns <start-path> <lform-json-src> [--verbose] [--overwrite] [--deps=<deps.ts>]
   mgctl -h | --help
   mgctl --version
 
@@ -24,10 +26,41 @@ Options:
   <lform-json-src>            LHC Form JSON source(s) glob (like "**/*.lhc-form.json")
   <start-path>                Starting path to search for LHC Form JSON sources
   --validate                  Check the generated TypeScript file(s)
-  --deps=<file.ts>            Where the deps.ts file is found (default: "../../deps.ts")
+  --mg-home=<path>            Absolute or relative path of the Medigy Governance library
+  --mg-version=<semver>       Version of Medigy Governance schemas to use (ignored if --mg-home provided)
+  --gd-mod-ref=<path>         Absolute or relative path of the GovSuite GSD module to use
+  --gd-mod-deps=<deps.ts>     Relative path to the deps.ts file for access GovSuite GSD 'govnData' module (ignored if --gd-mod-ref provided)
   --persist-on-error          Saves the generated *.auto.ts file on error
+  --overwrite                 Replace files in case they already exist
+  --dry-run                   Only show what will be done, without executing
   --verbose                   Be explicit about what's going on
 `;
+
+export function govnDataModuleImportDirective(
+  { "--gd-mod-ref": moduleRef, "--gd-mod-deps": depsTs }:
+    gdctl.docopt.DocOptions,
+): { govnDataModuleImportDirective: string } {
+  return {
+    govnDataModuleImportDirective: moduleRef
+      ? `import * as govnData from "${moduleRef}";`
+      : `import { govnData } from "${
+        depsTs ? depsTs.toString() : "./deps.ts"
+      }";`,
+  };
+}
+
+export function medigyGovnModuleRef(
+  { "--mg-home": medigyGovnHome, "--mg-version": medigyGovnSemVer }:
+    gdctl.docopt.DocOptions,
+): { medigyGovnModuleRef: string } {
+  return {
+    medigyGovnModuleRef: medigyGovnHome
+      ? medigyGovnHome.toString()
+      : `https://denopkg.com/medigy/governance${
+        medigyGovnSemVer ? `@${medigyGovnSemVer.toString()}` : ""
+      }`,
+  };
+}
 
 export function validateEmitted(result: gd.StructuredDataTyperResult): void {
   if (gd.isFileDestinationResult(result)) {
@@ -44,11 +77,11 @@ export class LhcFormJsonTyper extends gd.TypicalJsonTyper {
   constructor({ "--deps": depsTs }: gdctl.docopt.DocOptions) {
     super(gd.defaultTypicalJsonTyperOptions(
       [
-        `import { nihLhcForms as mod, govnData } from "${
+        `import { nihLhcForms as lform, govnData } from "${
           depsTs ? depsTs.toString() : "./deps.ts"
         }";`,
       ],
-      "NihLhcForm",
+      "lform.NihLhcForm",
       { instanceName: "form", emittedFileExtn: ".lhc-form.auto.ts" },
     ));
   }
@@ -98,6 +131,39 @@ export class LhcFormEvalFacetTyper extends lform.LhcFormContainer {
 
     export default ${className};
     `.replaceAll(/^ {8}/gm, ""); // remove indendation
+  }
+}
+
+export async function offeringProfileLhcFormJsonTyperCliHandler(
+  ctx: gd.CliCmdHandlerContext,
+): Promise<true | void> {
+  const {
+    "offering-profile": offeringProfile,
+    "type": type,
+    "<lform-json-src>": lformJsonSpec,
+    "--validate": validate,
+  } = ctx.cliOptions;
+  if (offeringProfile && type && lformJsonSpec) {
+    const ctl = new gd.TypicalController(
+      ctx.calledFromMetaURL,
+      {
+        ...ctx.tco,
+        defaultJsonExtn: ".lch-form.auto.json",
+        onAfterEmit: (result: gd.StructuredDataTyperResult): void => {
+          if (validate && !ctx.isDryRun) validateEmitted(result);
+        },
+      },
+    );
+    ctl.jsonType({
+      jsonSrcSpec: lformJsonSpec?.toString() || "**/*.json",
+      typer: new mod.offerProfile.lf.OfferingProfileLhcFormJsonTyper({
+        ...govnDataModuleImportDirective(ctx.cliOptions),
+        ...medigyGovnModuleRef(ctx.cliOptions),
+      }),
+      verbose: ctx.isVerbose || ctx.isDryRun,
+      overwrite: ctx.shouldOverwrite,
+    });
+    return true;
   }
 }
 
@@ -167,12 +233,12 @@ export async function lhcFormEvalFacetCliHandler(
   }
 }
 
-export async function lhcFormsToCampaigns(
+export async function lhcFormsToEvalFacetCampaignsCliHandler(
   ctx: gd.CliCmdHandlerContext,
 ): Promise<true | void> {
   const {
     "lform": lform,
-    "campaigns": campaigns,
+    "eval-facet-campaigns": campaigns,
     "<start-path>": startPathSpec,
     "<lhc-json-src>": lhcFormJsonSrcSpec,
     "--deps": depsTs,
@@ -297,9 +363,10 @@ if (import.meta.main) {
   gdctl.CLI<gd.CliCmdHandlerContext>(
     docoptSpec,
     [
+      offeringProfileLhcFormJsonTyperCliHandler,
       lhcFormJsonTyperCliHandler,
       lhcFormEvalFacetCliHandler,
-      lhcFormsToCampaigns,
+      lhcFormsToEvalFacetCampaignsCliHandler,
     ],
     (options: gdctl.docopt.DocOptions): gd.CliCmdHandlerContext => {
       return new gd.CliCmdHandlerContext(

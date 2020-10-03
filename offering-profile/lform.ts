@@ -1,4 +1,4 @@
-import type { nihLhcForms as lf } from "./deps.ts";
+import { govnData as gd, nihLhcForms as lf } from "./deps.ts";
 
 export interface RespondentCompanyName extends lf.UniqueTextItem {
   readonly questionCode: "company-name";
@@ -73,4 +73,27 @@ export interface OfferingProfileLhcForm extends lf.NihLhcForm {
     ProductDetails,
     SocialPresence,
   ];
+}
+
+/**
+ * OfferingProfileLhcFormJsonTyper takes an LHC Form JSON file and "types"
+ * it as a Medigy Offering Profile. Once "typed" an LHC Form may be validated
+ * by the TypeScript compiler.
+ */
+export class OfferingProfileLhcFormJsonTyper extends gd.TypicalJsonTyper {
+  constructor(
+    options: {
+      govnDataModuleImportDirective: string;
+      medigyGovnModuleRef: string;
+    },
+  ) {
+    super(gd.defaultTypicalJsonTyperOptions(
+      [
+        options.govnDataModuleImportDirective,
+        `import type * as op from "${options.medigyGovnModuleRef}/offering-profile/lform.ts";`,
+      ],
+      "op.OfferingProfileLhcForm",
+      { instanceName: "profile", emittedFileExtn: ".lhc-form.auto.ts" },
+    ));
+  }
 }
