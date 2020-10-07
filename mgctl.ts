@@ -7,6 +7,7 @@ Medigy Governance Controller ${$VERSION}.
 
 Usage:
   mgctl offering-profile type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
+  mgctl institution-profile type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
   mgctl quant-eval type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
   mgctl quant-eval type facet <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose]
   mgctl quant-eval type campaigns <start-path> <lform-json-src> [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--verbose] [--overwrite]
@@ -137,6 +138,26 @@ export async function offeringProfileLhcFormJsonTyperCliHandler(
   }
 }
 
+export async function institutionProfileLhcFormJsonTyperCliHandler(
+  ctx: gd.CliCmdHandlerContext,
+): Promise<true | void> {
+  const {
+    "institution-profile": institutionProfile,
+    "type": type,
+    "lform": lform,
+    "<lform-json-src>": lformJsonSpec,
+  } = ctx.cliOptions;
+  if (institutionProfile && type && lform && lformJsonSpec) {
+    typeLhcFormJSON(
+      ctx,
+      new mod.instiProfile.lf.InstitutionProfileLhcFormJsonTyper({
+        ...govnDataModuleImportDirective(ctx.cliOptions),
+        ...medigyGovnModuleRef(ctx.cliOptions),
+      }),
+    );
+    return true;
+  }
+}
 export async function quantEvalFacetLhcFormJsonTyperCliHandler(
   ctx: gd.CliCmdHandlerContext,
 ): Promise<true | void> {
@@ -226,6 +247,7 @@ if (import.meta.main) {
     docoptSpec,
     [
       offeringProfileLhcFormJsonTyperCliHandler,
+      institutionProfileLhcFormJsonTyperCliHandler,
       quantEvalFacetLhcFormJsonTyperCliHandler,
       quantEvalFacetTyperCliHandler,
       quantEvalCampaignsTyperCliHandler,

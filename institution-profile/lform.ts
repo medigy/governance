@@ -256,7 +256,7 @@ export class InstitutionProfileLhcFormJsonTyper extends gd.TypicalJsonTyper {
         options.govnDataModuleImportDirective,
         options.medigyGovnModuleTypeImportDirective,
       ],
-      "medigyGovn.institutionProfile.lf.InstitutionProfileLhcForm",
+      "medigyGovn.instiProfile.lf.InstitutionProfileLhcForm",
       {
         instanceName: "profile",
         emittedFileExtn: ".lhc-form.auto.ts",
