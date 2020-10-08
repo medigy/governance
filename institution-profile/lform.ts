@@ -47,11 +47,12 @@ export interface CompanyName extends RequiredUniqueTextItem {
   readonly localQuestionCode: "002-01-04";
   readonly question: "Company Name*";
 }
+
 export interface CompanyDescription extends UniqueMultiLineTextItem {
-  readonly questionCode: "002-01-13";
-  readonly localQuestionCode: "002-01-13";
-  readonly question: "Company Description*";
+  readonly questionCode: "002-01-11";
+  readonly question: "Company Description";
 }
+
 export interface DateofIncorporation extends UniqueDateItem {
   readonly questionCode: "002-01-05";
   readonly localQuestionCode: "002-01-05";
@@ -64,7 +65,6 @@ export interface CompanyType extends lf.ConstrainedListItem {
 }
 export interface RegistrationNumber extends RequiredUniqueTextItem {
   readonly questionCode: "002-01-07";
-  readonly localQuestionCode: "002-01-07";
   readonly question: "Registration Number*";
 }
 export interface Industry extends RequiredUniqueTextItem {
@@ -94,8 +94,8 @@ export interface Website extends RequiredUniqueTextItem {
   readonly question: "Website*";
 }
 export interface WorkEmail extends lf.UniqueEmailAddressItem {
-  readonly questionCode: "002-01-12";
-  readonly localQuestionCode: "002-01-12";
+  readonly questionCode: "002-02-02";
+  readonly localQuestionCode: "002-02-02";
   readonly question: "Work Email*";
 }
 export interface WorkPhone extends lf.UniquePhoneItem {
@@ -143,19 +143,14 @@ export interface GithubPassword extends RequiredUniqueTextItem {
   readonly question: "Github Password";
 }
 export interface GithubClientId extends RequiredUniqueTextItem {
-  readonly questionCode: "002-03-02";
-  readonly localQuestionCode: "002-03-02";
-  readonly question: "Github Cient Id";
-}
-export interface GithubClientId extends RequiredUniqueTextItem {
-  readonly questionCode: "002-03-02";
-  readonly localQuestionCode: "002-03-02";
-  readonly question: "Github Cient Id";
+  readonly questionCode: "002-03-03";
+  readonly localQuestionCode: "002-03-03";
+  readonly question: "Github Client ID";
 }
 export interface GithubClientSecret extends RequiredUniqueTextItem {
   readonly questionCode: "002-03-04";
   readonly localQuestionCode: "002-03-04";
-  readonly question: "Github Cient Secret";
+  readonly question: "Github Client Secret";
 }
 export interface GithubOwner extends RequiredUniqueTextItem {
   readonly questionCode: "002-03-05";
@@ -227,10 +222,6 @@ export interface InstitutionProfileLhcForm extends lf.NihLhcForm {
     NetWorth,
     CompanySize,
     ContactDetails,
-    Website,
-    WorkEmail,
-    WorkPhone,
-    AlternatePhone,
     CompanyAddress,
     InvitationSource,
     CrmIdentifier,
