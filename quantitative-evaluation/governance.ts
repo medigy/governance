@@ -1,10 +1,10 @@
 import {
+  fs,
+  governedInstr,
   govnData as gd,
   inflect,
   nihLhcForms as lform,
   path,
-  governedInstr,
-  fs,
 } from "./deps.ts";
 
 // deno-lint-ignore no-empty-interface

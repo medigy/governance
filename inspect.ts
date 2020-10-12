@@ -82,65 +82,95 @@ export interface Inspector<T, C extends InspectionContext<T>> {
   (
     ctx: C,
     diags: InspectionDiagnostics<T, C>,
+    previous?: InspectionResult,
   ): Promise<InspectionResult>;
 }
 
 export interface InspectionSupplier<T, C extends InspectionContext<T>> {
   readonly inspect: (
     ctx: C,
+    diags: InspectionDiagnostics<T, C>,
     ...inspectors: Inspector<T, C>[]
   ) => Promise<InspectionResult>;
 }
 
-export function defaultInspectionDiags<T, C extends InspectionContext<T>>(
-  options?: Partial<InspectionDiagnostics<T, C>> & {
-    verbose?: boolean;
-  },
-): InspectionDiagnostics<T, C> {
-  const verbose = typeof options?.verbose === "undefined"
-    ? true
-    : options.verbose;
-  return {
-    continue: (ctx: C, result: InspectionResult): boolean => {
-      if (isInspectionIssueRecoverable(result)) return true;
+export class InspectionDiagnosticsRecorder<T, C extends InspectionContext<T>>
+  implements InspectionDiagnostics<T, C> {
+  readonly issues: InspectionIssue[] = [];
+  readonly exceptions: InspectionException[] = [];
 
-      // stop after the first unrecoverable error
-      return isSuccessfulInspection(result);
-    },
-    onIssue: options?.onIssue ||
-      (async (
-        result: InspectionResult,
-        ctx: C,
-      ): Promise<InspectionIssue> => {
-        if (verbose && isDiagnosableInspectionResult(result)) {
-          console.error(result.diagnosticMessage(result));
-        }
-        return {
-          // if the result is dianosable, it will be part of the spread
-          ...result,
-          isInspectionIssue: true,
-        };
-      }),
-    onException: options?.onException ||
-      (async (
-        err: Error,
-        result: InspectionResult,
-      ): Promise<InspectionException> => {
-        if (verbose) {
-          if (isDiagnosableInspectionResult(result)) {
-            console.error(result.diagnosticMessage(result));
-          } else {
-            console.error(err);
-          }
-        }
-        return {
-          ...result,
-          isInspectionIssue: true,
-          isInspectionException: true,
-          exception: err,
-        };
-      }),
-  };
+  continue(ctx: C, result: InspectionResult): boolean {
+    if (isInspectionIssueRecoverable(result)) return true;
+
+    // stop after the first unrecoverable error
+    return isSuccessfulInspection(result);
+  }
+
+  async onIssue(
+    result: InspectionResult,
+    ctx: C,
+  ): Promise<InspectionResult> {
+    const issue: InspectionIssue = {
+      // if the result is diagnosable, it will be part of the spread
+      ...result,
+      isInspectionIssue: true,
+    };
+    this.issues.push(issue);
+    return issue;
+  }
+
+  async onException(
+    err: Error,
+    result: InspectionResult,
+    ctx: C,
+  ): Promise<InspectionResult> {
+    const exception: InspectionException = {
+      ...result,
+      isInspectionIssue: true,
+      isInspectionException: true,
+      exception: err,
+    };
+    this.exceptions.push(exception);
+    return exception;
+  }
+}
+
+export class ConsoleInspectionDiagnostics<T, C extends InspectionContext<T>>
+  implements InspectionDiagnostics<T, C> {
+  constructor(
+    readonly wrap: InspectionDiagnostics<T, C>,
+    readonly verbose?: boolean,
+  ) {
+  }
+
+  continue(ctx: C, result: InspectionResult): boolean {
+    return this.wrap.continue(ctx, result);
+  }
+
+  async onIssue(
+    result: InspectionResult,
+    ctx: C,
+  ): Promise<InspectionResult> {
+    if (this.verbose && isDiagnosableInspectionResult(result)) {
+      console.error(result.diagnosticMessage(result));
+    }
+    return await this.wrap.onIssue(result, ctx);
+  }
+
+  async onException(
+    err: Error,
+    result: InspectionResult,
+    ctx: C,
+  ): Promise<InspectionResult> {
+    if (this.verbose) {
+      if (isDiagnosableInspectionResult(result)) {
+        console.error(result.diagnosticMessage(result));
+      } else {
+        console.error(err);
+      }
+    }
+    return await this.wrap.onException(err, result, ctx);
+  }
 }
 
 export function inspectionPipe<T, C extends InspectionContext<T>>(
@@ -148,9 +178,10 @@ export function inspectionPipe<T, C extends InspectionContext<T>>(
   outerDiags: InspectionDiagnostics<T, C>,
   ...inspectors: Inspector<T, C>[]
 ): Inspector<T, C> {
-  const result: Inspector<T, C> = async (
+  const outerResult: Inspector<T, C> = async (
     ctx: C = outerCtx,
     diags: InspectionDiagnostics<T, C> = outerDiags,
+    outerPrevious?: InspectionResult,
   ): Promise<InspectionResult> => {
     if (inspectors.length == 0) {
       const empty: EmptyInspectorsResult<T> = {
@@ -161,36 +192,44 @@ export function inspectionPipe<T, C extends InspectionContext<T>>(
       return empty;
     }
 
-    let result: InspectionResult = {
+    let innerResult: InspectionResult = outerPrevious || {
       isInspectionResult: true,
     };
     for (const inspect of inspectors) {
       try {
-        result = await inspect(ctx, diags);
-        if (isInspectionException(result)) {
-          result = await diags.onIssue(result, ctx);
-          if (!diags.continue(ctx, result)) return result;
+        innerResult = await inspect(ctx, diags, innerResult);
+        if (isInspectionException(innerResult)) {
+          innerResult = await diags.onException(
+            innerResult.exception,
+            innerResult,
+            ctx,
+          );
+          if (!diags.continue(ctx, innerResult)) return innerResult;
+        } else if (isInspectionIssue(innerResult)) {
+          innerResult = await diags.onIssue(innerResult, ctx);
+          if (!diags.continue(ctx, innerResult)) return innerResult;
         }
       } catch (innerErr) {
-        result = await diags.onException(innerErr, result, ctx);
-        if (!diags.continue(ctx, result)) return result;
+        innerResult = await diags.onException(innerErr, innerResult, ctx);
+        if (!diags.continue(ctx, innerResult)) return innerResult;
       }
     }
-    return result;
+    return innerResult;
   };
-  return result;
+  return outerResult;
 }
 
 export class TypicalInspectionSupplier<T, C extends InspectionContext<T>>
   implements InspectionSupplier<T, C> {
-  constructor(readonly diags = defaultInspectionDiags<T, C>()) {
+  constructor() {
   }
 
   async inspect(
     ctx: C,
+    diags: InspectionDiagnostics<T, C>,
     ...inspectors: Inspector<T, C>[]
   ): Promise<InspectionResult> {
-    const v = inspectionPipe<T, C>(ctx, this.diags, ...inspectors);
-    return await v(ctx, this.diags);
+    const v = inspectionPipe<T, C>(ctx, diags, ...inspectors);
+    return await v(ctx, diags);
   }
 }

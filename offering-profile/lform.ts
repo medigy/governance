@@ -1,3 +1,6 @@
+import * as inspLF from "../inspect-lhc-form.ts";
+import * as inspText from "../inspect-text.ts";
+import type * as insp from "../inspect.ts";
 import { govnData as gd, nihLhcForms as lf } from "./deps.ts";
 
 export interface MultiLineTextItem extends lf.FormItem {
@@ -41,6 +44,7 @@ export interface RespondentCompanyName extends RequiredUniqueTextItem {
   readonly codeList: [
     RespondantCompanyNameCodeList,
   ];
+  readonly value: string;
 }
 
 export interface RespondantCompanyNameCodeList extends lf.FormItem {
@@ -498,6 +502,67 @@ export interface OfferingProfileLhcForm extends lf.NihLhcForm {
     ProductDetails,
     SocialPresence,
   ];
+}
+
+/**
+ * OfferingProfileValidator is focused on testing values of fields. The 
+ * OfferingProfileLhcForm can do all the structural validation but because
+ * it is tightly tied to LCH Form JSON schema, we have to do values 
+ * validation in this class instead of OfferingProfileLhcForm.
+ */
+export class OfferingProfileValidator
+  extends inspLF.LhcFormInspectionSupplier<OfferingProfileLhcForm> {
+  static readonly singleton = new OfferingProfileValidator();
+
+  async inspect(
+    ctx: inspLF.LhcFormInspectionContext<OfferingProfileLhcForm>,
+    diags: inspLF.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
+  ): Promise<insp.InspectionResult> {
+    const op = ctx.form;
+    await this.inspectProductDetails(ctx, diags, op.items[1]);
+    return inspLF.lformInspectionSuccess<OfferingProfileLhcForm>(op);
+  }
+
+  protected async inspectProductDetails(
+    ctx: inspLF.LhcFormInspectionContext<OfferingProfileLhcForm>,
+    diags: inspLF.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
+    pd: ProductDetails,
+  ) {
+    const oneLiner: OfferingOneLinerDescription = pd.items[4];
+    await this.inspectText(
+      ctx,
+      diags,
+      oneLiner,
+      inspText.inspectWordCountRange,
+    );
+
+    const websiteURL: OfferingWebsite = pd.items[7];
+    await this.inspectText(
+      ctx,
+      diags,
+      websiteURL,
+      inspText.inspectWebsiteURL,
+    );
+  }
+
+  protected async inspectText(
+    ctx: inspLF.LhcFormInspectionContext<OfferingProfileLhcForm>,
+    diags: inspLF.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
+    item: lf.FormItem,
+    ...inspectors: inspText.TextInspector[]
+  ) {
+    const tidr = new inspText.TextInspectionDiagnosticsRecorder();
+    await inspText.TextInspectionSupplier.typical.inspect(
+      // TODO: need to figure out how to get proper value for each item
+      new inspText.TextInspectionContext(item.value?.toString() || ""),
+      tidr,
+      ...inspectors,
+    );
+    tidr.issues.forEach((issue) => diags.onIssue(issue, ctx));
+    tidr.exceptions.forEach((excp) =>
+      diags.onException(excp.exception, excp, ctx)
+    );
+  }
 }
 
 /**
