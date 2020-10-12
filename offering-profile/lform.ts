@@ -1,3 +1,4 @@
+import type { EmailAddressItem } from "https://raw.githubusercontent.com/shah/ts-lhncbc-lforms/v1.4.0/item.ts";
 import * as inspLF from "../inspect-lhc-form.ts";
 import * as inspText from "../inspect-text.ts";
 import type * as insp from "../inspect.ts";
@@ -34,6 +35,11 @@ export interface RequiredMultipleAnswers {
 
 export type RequiredUniqueTextItem = lf.UniqueTextItem & RequiredSingleAnswer;
 
+export interface ConstrainedListItemValue extends lf.FormItem {
+  readonly text: string;
+  readonly code?: string | number;
+}
+
 export interface RespondentCompanyName extends RequiredUniqueTextItem {
   readonly questionCode: "company-name";
   readonly localQuestionCode: "company-name";
@@ -64,6 +70,7 @@ export interface RespondentEmailAddress extends lf.UniqueEmailAddressItem {
   readonly codeList: [
     RespondantEmailAddresscCodeList,
   ];
+  readonly value: string;
 }
 
 export interface RespondantEmailAddresscCodeList extends lf.FormItem {
@@ -82,6 +89,7 @@ export interface RespondentContactPhoneNumber extends lf.UniquePhoneItem {
   readonly codeList: [
     RespondantContactPhoneNumberCodeList,
   ];
+  readonly value: string;
 }
 
 export interface RespondantContactPhoneNumberCodeList extends lf.FormItem {
@@ -101,6 +109,7 @@ export interface RespondentVendorName extends RequiredUniqueTextItem {
   readonly codeList: [
     RespondentVendorNameCodeList,
   ];
+  readonly value: string;
 }
 
 export interface RespondentVendorNameCodeList extends lf.FormItem {
@@ -121,6 +130,7 @@ export interface RespondentVendorEmailAddress
   readonly codeList: [
     RespondentVendorEmailAddressCodeList,
   ];
+  readonly value: string;
 }
 
 export interface RespondentVendorEmailAddressCodeList extends lf.FormItem {
@@ -140,6 +150,7 @@ export interface RespondentVendorPhoneNumber extends lf.UniquePhoneItem {
   readonly codeList: [
     RespondentVendorPhoneNumberCodeList,
   ];
+  readonly value: string;
 }
 
 export interface RespondentVendorPhoneNumberCodeList extends lf.FormItem {
@@ -158,6 +169,7 @@ export interface RespondentSource extends lf.ConstrainedListItem {
   readonly codeList: [
     RespondentSourceCodeList,
   ];
+  readonly value: ConstrainedListItemValue;
 }
 
 export interface RespondentSourceCodeList extends lf.FormItem {
@@ -211,6 +223,7 @@ export interface OfferingType extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingTypeCodeList,
   ];
+  readonly value: ConstrainedListItemValue;
 }
 
 export interface OfferingTypeCodeList extends lf.FormItem {
@@ -227,6 +240,7 @@ export interface OfferingOwnerCheck extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingOwnerCheckCodeList,
   ];
+  readonly value: ConstrainedListItemValue;
 }
 
 export interface OfferingOwnerCheckCodeList extends lf.FormItem {
@@ -245,6 +259,7 @@ export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingTopicsCodeList,
   ];
+  readonly value: ConstrainedListItemValue[];
 }
 
 export interface OfferingTopicsCodeList extends lf.FormItem {
@@ -263,6 +278,7 @@ export interface OfferingName extends RequiredUniqueTextItem {
   readonly codeList: [
     OfferingNameCodeList,
   ];
+  readonly value: string;
 }
 
 export interface OfferingNameCodeList extends lf.FormItem {
@@ -280,6 +296,7 @@ export interface OfferingOneLinerDescription extends UniqueMultiLineTextItem {
   readonly codeList: [
     OfferingOneLinerDescriptionCodeList,
   ];
+  readonly value: string;
 }
 
 export interface OfferingOneLinerDescriptionCodeList extends lf.FormItem {
@@ -298,6 +315,7 @@ export interface OfferingFeaturedProductCheck extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingFeaturedProductCheckCodeList,
   ];
+  readonly value: ConstrainedListItemValue;
 }
 
 export interface OfferingFeaturedProductCheckCodeList extends lf.FormItem {
@@ -315,6 +333,7 @@ export interface OfferingCreatedDate extends UniqueDateItem {
   readonly codeList: [
     OfferingCreatedDateCodeList,
   ];
+  readonly value: string;
 }
 
 export interface OfferingCreatedDateCodeList extends lf.FormItem {
@@ -333,6 +352,7 @@ export interface OfferingWebsite extends lf.UniqueTextItem {
   readonly codeList: [
     OfferingWebsiteCodeList,
   ];
+  readonly value: string;
 }
 
 export interface OfferingWebsiteCodeList extends lf.FormItem {
@@ -351,6 +371,7 @@ export interface OfferingLicense extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingLicenseCodeList,
   ];
+  readonly value: ConstrainedListItemValue;
 }
 
 export interface OfferingLicenseCodeList extends lf.FormItem {
@@ -369,6 +390,7 @@ export interface OfferingGitRepository extends lf.UniqueTextItem {
   readonly codeList: [
     OfferingGitRepositoryCodeList,
   ];
+  readonly value: string;
 }
 
 export interface OfferingGitRepositoryCodeList extends lf.FormItem {
@@ -388,6 +410,7 @@ export interface OfferingDescription extends UniqueMultiLineTextItem {
   readonly codeList: [
     OfferingDescriptionCodeList,
   ];
+  readonly value: string;
 }
 
 export interface OfferingDescriptionCodeList extends lf.FormItem {
@@ -407,6 +430,7 @@ export interface OfferingPermaLink extends lf.UniqueTextItem {
   readonly codeList: [
     OfferingPermaLinkCodeList,
   ];
+  readonly value: string;
 }
 
 export interface OfferingPermaLinkCodeList extends lf.FormItem {
@@ -436,6 +460,7 @@ export interface SocialPresenceFacebookLink extends lf.UniqueTextItem {
   readonly codeList: [
     SocialPresenceFacebookLinkCodeList,
   ];
+  readonly value: string;
 }
 
 export interface SocialPresenceFacebookLinkCodeList extends lf.FormItem {
@@ -453,6 +478,7 @@ export interface SocialPresenceTwitterLink extends lf.UniqueTextItem {
   readonly codeList: [
     SocialPresenceTwitterLinkCodeList,
   ];
+  readonly value: string;
 }
 
 export interface SocialPresenceTwitterLinkCodeList extends lf.FormItem {
@@ -470,6 +496,7 @@ export interface SocialPresenceLinkedInLink extends lf.UniqueTextItem {
   readonly codeList: [
     SocialPresenceLinkedInLinkCodeList,
   ];
+  readonly value: string;
 }
 
 export interface SocialPresenceLinkedInLinkCodeList extends lf.FormItem {
@@ -487,6 +514,7 @@ export interface SocialPresenceInstagramLink extends lf.UniqueTextItem {
   readonly codeList: [
     SocialPresenceInstagramLinkCodeList,
   ];
+  readonly value: string;
 }
 
 export interface SocialPresenceInstagramLinkCodeList extends lf.FormItem {
