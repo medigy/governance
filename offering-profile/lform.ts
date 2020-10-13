@@ -571,6 +571,143 @@ async function inspectProductDetails(
     websiteURL,
     inspText.inspectWebsiteURL,
   );
+  /* Validate with reference source site */
+  const license: OfferingLicense = pd.items[8];
+  await inspectText(
+    ctx,
+    op,
+    license,
+    // inspText.inspectLicense,
+  );
+  /* Mandatory if "License Of The Offering" is Open Source
+   * GIT URL of the offering repository
+   * Validate with reference source site
+   */
+  const gitRepository: OfferingGitRepository = pd.items[9];
+  await inspectText(
+    ctx,
+    op,
+    gitRepository,
+    // inspText.inspectGitRepository,
+  );
+  /* Maximum 45 to 50 words
+   */
+  const description: OfferingDescription = pd.items[10];
+  await inspectText(
+    ctx,
+    op,
+    description,
+    inspText.inspectWordCountRange,
+  );
+  /* Unique link in the entire system of offering */
+  const permaLink: OfferingPermaLink = pd.items[11];
+  await inspectText(
+    ctx,
+    op,
+    permaLink,
+    // inspText.inspectPermaLink,
+  );
+  // TODO figure out if errors were encountered above and return invalid
+  return lf.lhcFormInspectionSuccess(active.inspectionTarget);
+}
+
+async function inspectSocialPresence(
+  ctx: lf.LhcFormInspectionContext<OfferingProfileLhcForm>,
+  active: lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
+): Promise<lf.LhcFormInspectionResult<OfferingProfileLhcForm>> {
+  const op = active.inspectionTarget;
+  const sp: SocialPresence = op.items[2];
+  /* Facebook URL, to be verified in Facebook
+   * Validate with reference source site 
+   */
+  const facebookLink: SocialPresenceFacebookLink = sp.items[0];
+  await inspectText(
+    ctx,
+    op,
+    facebookLink,
+    inspText.inspectWebsiteURL,
+  );
+  /* Twitter URL, to be verified in Twitter
+   * Validate with reference source site 
+   */
+  const twitterLink: SocialPresenceTwitterLink = sp.items[1];
+  await inspectText(
+    ctx,
+    op,
+    twitterLink,
+    inspText.inspectWebsiteURL,
+  );
+  /* LinkedIn URL, to be verified in LinkedIn
+   * Validate with reference source site 
+   */
+  const linkedInLink: SocialPresenceLinkedInLink = sp.items[2];
+  await inspectText(
+    ctx,
+    op,
+    linkedInLink,
+    inspText.inspectWebsiteURL,
+  );
+  /* Instagram URL, to be verified in Instagram
+   * Validate with reference source site 
+   */
+  const instagramLink: SocialPresenceInstagramLink = sp.items[3];
+  await inspectText(
+    ctx,
+    op,
+    instagramLink,
+    inspText.inspectWebsiteURL,
+  );
+
+  // TODO figure out if errors were encountered above and return invalid
+  return lf.lhcFormInspectionSuccess(active.inspectionTarget);
+}
+
+async function inspectRespondantInformation(
+  ctx: lf.LhcFormInspectionContext<OfferingProfileLhcForm>,
+  active: lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
+): Promise<lf.LhcFormInspectionResult<OfferingProfileLhcForm>> {
+  const op = active.inspectionTarget;
+  const ri: RespondentContactInformation = op.items[0];
+  // Check for the email verification using tools like https://email-checker.net
+  const respondantEmail: RespondentEmailAddress = ri.items[1];
+  await inspectText(
+    ctx,
+    op,
+    respondantEmail,
+    // inspText.inspectEmail,
+  );
+
+  // Check for the email verification using tools like https://email-checker.net
+  const respondantVendorEmail: RespondentVendorEmailAddress = ri.items[4];
+  await inspectText(
+    ctx,
+    op,
+    respondantVendorEmail,
+    // inspText.inspectEmail,
+  );
+
+  /* Check for US number formatting
+   * Validate with reference source site if possible
+   */
+  const respondantContactNumber: RespondentContactPhoneNumber = ri.items[2];
+  await inspectText(
+    ctx,
+    op,
+    respondantContactNumber,
+    // inspText.inspectPhone,
+  );
+
+  /* Check for US number formatting
+   * Validate with reference source site if possible
+   */
+  const respondantVendorContact: RespondentVendorPhoneNumber = ri.items[5];
+  await inspectText(
+    ctx,
+    op,
+    respondantVendorContact,
+    // inspText.inspectPhone,
+  );
+
   // TODO figure out if errors were encountered above and return invalid
   return lf.lhcFormInspectionSuccess(active.inspectionTarget);
 }
@@ -583,7 +720,11 @@ async function inspectProductDetails(
  */
 export class OfferingProfileValidator {
   static readonly singleton = new OfferingProfileValidator();
-  readonly inspectors = [inspectProductDetails];
+  readonly inspectors = [
+    inspectProductDetails,
+    inspectSocialPresence,
+    inspectRespondantInformation,
+  ];
 
   async inspect(
     op: OfferingProfileLhcForm,
