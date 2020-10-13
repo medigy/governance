@@ -5,43 +5,7 @@ import {
   nihLhcForms as lf,
 } from "./deps.ts";
 
-export interface MultiLineTextItem extends lf.FormItem {
-  readonly dataType: "TX";
-}
-
-export function isMultiLineTextItem(i: lf.FormItem): i is MultiLineTextItem {
-  return i.dataType == "TX";
-}
-
-export type UniqueMultiLineTextItem = MultiLineTextItem & lf.UniqueItem;
-
-export interface DateItem extends lf.FormItem {
-  readonly dataType: "DT";
-}
-
-export function isDateItem(i: lf.FormItem): i is DateItem {
-  return i.dataType == "DT";
-}
-
-export type UniqueDateItem = DateItem & lf.UniqueItem;
-
-export interface RequiredSingleAnswer {
-  readonly answerCardinality: { min: 0 | 1; max: 1 };
-  readonly editable?: 1;
-}
-
-export interface RequiredMultipleAnswers {
-  readonly answerCardinality: { min: 1; max: "*" };
-}
-
-export type RequiredUniqueTextItem = lf.UniqueTextItem & RequiredSingleAnswer;
-
-export interface ConstrainedListItemValue extends lf.FormItem {
-  readonly text: string;
-  readonly code?: string | number;
-}
-
-export interface RespondentCompanyName extends RequiredUniqueTextItem {
+export interface RespondentCompanyName extends lf.RequiredUniqueTextItem {
   readonly questionCode: "company-name";
   readonly localQuestionCode: "company-name";
   readonly question: "Name of the company providing this offering*";
@@ -99,7 +63,7 @@ export interface RespondantContactPhoneNumberCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface RespondentVendorName extends RequiredUniqueTextItem {
+export interface RespondentVendorName extends lf.RequiredUniqueTextItem {
   readonly questionCode: "Q002-07";
   readonly localQuestionCode: "Q002-07";
   readonly question: "Vendor Name*";
@@ -170,7 +134,7 @@ export interface RespondentSource extends lf.ConstrainedListItem {
   readonly codeList: [
     RespondentSourceCodeList,
   ];
-  readonly value: ConstrainedListItemValue;
+  readonly value: lf.ConstrainedListItemValue;
 }
 
 export interface RespondentSourceCodeList extends lf.FormItem {
@@ -224,7 +188,7 @@ export interface OfferingType extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingTypeCodeList,
   ];
-  readonly value: ConstrainedListItemValue;
+  readonly value: lf.ConstrainedListItemValue;
 }
 
 export interface OfferingTypeCodeList extends lf.FormItem {
@@ -241,7 +205,7 @@ export interface OfferingOwnerCheck extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingOwnerCheckCodeList,
   ];
-  readonly value: ConstrainedListItemValue;
+  readonly value: lf.ConstrainedListItemValue;
 }
 
 export interface OfferingOwnerCheckCodeList extends lf.FormItem {
@@ -260,7 +224,7 @@ export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingTopicsCodeList,
   ];
-  readonly value: ConstrainedListItemValue[];
+  readonly value: lf.ConstrainedListItemValue[];
 }
 
 export interface OfferingTopicsCodeList extends lf.FormItem {
@@ -269,7 +233,7 @@ export interface OfferingTopicsCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface OfferingName extends RequiredUniqueTextItem {
+export interface OfferingName extends lf.RequiredUniqueTextItem {
   readonly questionCode: "Q005-02";
   readonly localQuestionCode: "Q005-02";
   readonly question: "Offering name*";
@@ -287,7 +251,8 @@ export interface OfferingNameCodeList extends lf.FormItem {
   readonly display: "Offering name*";
   readonly system: "http://loinc.org";
 }
-export interface OfferingOneLinerDescription extends UniqueMultiLineTextItem {
+export interface OfferingOneLinerDescription
+  extends lf.UniqueMultiLineTextItem {
   readonly questionCode: "Q005-11";
   readonly localQuestionCode: "Q005-11";
   readonly question: "A one liner describing the offering";
@@ -316,7 +281,7 @@ export interface OfferingFeaturedProductCheck extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingFeaturedProductCheckCodeList,
   ];
-  readonly value: ConstrainedListItemValue;
+  readonly value: lf.ConstrainedListItemValue;
 }
 
 export interface OfferingFeaturedProductCheckCodeList extends lf.FormItem {
@@ -325,7 +290,7 @@ export interface OfferingFeaturedProductCheckCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface OfferingCreatedDate extends UniqueDateItem {
+export interface OfferingCreatedDate extends lf.UniqueDateItem {
   readonly questionCode: "Q005-13";
   readonly localQuestionCode: "Q005-13";
   readonly question: "Created On*";
@@ -372,7 +337,7 @@ export interface OfferingLicense extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingLicenseCodeList,
   ];
-  readonly value: ConstrainedListItemValue;
+  readonly value: lf.ConstrainedListItemValue;
 }
 
 export interface OfferingLicenseCodeList extends lf.FormItem {
@@ -400,7 +365,7 @@ export interface OfferingGitRepositoryCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface OfferingDescription extends UniqueMultiLineTextItem {
+export interface OfferingDescription extends lf.UniqueMultiLineTextItem {
   readonly questionCode: "Q005-07";
   readonly localQuestionCode: "Q005-07";
   readonly question:
@@ -732,7 +697,9 @@ export class OfferingProfileValidator {
     lf.TypicalLhcFormInspectionContext<OfferingProfileLhcForm>,
     insp.InspectionResult<OfferingProfileLhcForm>,
   ]> {
-    const ctx = new lf.TypicalLhcFormInspectionContext(op);
+    const ctx = new lf.TypicalLhcFormInspectionContext<OfferingProfileLhcForm>(
+      op,
+    );
     const ip = insp.inspectionPipe(ctx, ...this.inspectors);
     const result = await ip(ctx);
     return [ctx, result];
