@@ -78,7 +78,7 @@ interface OfferingDescription
 ```
 Question Codes  Q005-07
 
-* Short description of the offering- Use 10 to 15 words.
+* Maximum 45 to 50 words
 
 ### Website of the offering
 
