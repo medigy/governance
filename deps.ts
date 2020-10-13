@@ -11,5 +11,7 @@ export * as serializeJS from "https://denopkg.com/shah/javascript-stringify@v2.0
 export * as serializeJsStringify from "https://denopkg.com/shah/javascript-stringify@v2.0.4/src/stringify.ts";
 export * as serializeJsTypes from "https://denopkg.com/shah/javascript-stringify@v2.0.4/src/types.ts";
 export * as inflect from "https://denopkg.com/shah/text-inflect@v1.0.4/mod.ts";
-export * as nihLhcForms from "https://denopkg.com/shah/ts-lhncbc-lforms@v1.4.0/mod.ts";
-export * as safety from "https://denopkg.com/shah/ts-safe-http-client@v0.5.13/safety/mod.ts";
+export * as inspect from "https://denopkg.com/shah/ts-inspect@v0.5.1/mod.ts";
+export * as inspText from "https://denopkg.com/shah/ts-inspect@v0.5.1/text/mod.ts";
+export * as nihLhcForms from "https://denopkg.com/shah/ts-lhncbc-lforms@v1.5.1/mod.ts";
+export * as safety from "https://denopkg.com/shah/ts-safety@v0.2.4/mod.ts";

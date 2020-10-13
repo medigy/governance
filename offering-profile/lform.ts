@@ -1,8 +1,9 @@
-import type { EmailAddressItem } from "https://raw.githubusercontent.com/shah/ts-lhncbc-lforms/v1.4.0/item.ts";
-import * as inspLF from "../inspect-lhc-form.ts";
-import * as inspText from "../inspect-text.ts";
-import type * as insp from "../inspect.ts";
-import { govnData as gd, nihLhcForms as lf } from "./deps.ts";
+import {
+  govnData as gd,
+  inspect as insp,
+  inspText,
+  nihLhcForms as lf,
+} from "./deps.ts";
 
 export interface MultiLineTextItem extends lf.FormItem {
   readonly dataType: "TX";
@@ -532,64 +533,68 @@ export interface OfferingProfileLhcForm extends lf.NihLhcForm {
   ];
 }
 
+async function inspectText(
+  lformCtx: lf.LhcFormInspectionContext<OfferingProfileLhcForm>,
+  form: OfferingProfileLhcForm,
+  item: lf.FormItem,
+  ...inspectors: inspText.TextInspector[]
+): Promise<void> {
+  if (!item.value) {
+    // TODO: if this is required, need to add error
+    return;
+  }
+  const itCtx = new inspText.TypicalTextInspectionContext(
+    item.value.toString(),
+  );
+  const ip = insp.inspectionPipe(itCtx, ...inspectors);
+  const result = await ip(itCtx);
+  lformCtx.diags.append(form, itCtx.diags, lformCtx);
+}
+
+async function inspectProductDetails(
+  ctx: lf.LhcFormInspectionContext<OfferingProfileLhcForm>,
+  active: lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
+): Promise<lf.LhcFormInspectionResult<OfferingProfileLhcForm>> {
+  const op = active.inspectionTarget;
+  const pd: ProductDetails = op.items[1];
+  const oneLiner: OfferingOneLinerDescription = pd.items[4];
+  await inspectText(
+    ctx,
+    op,
+    oneLiner,
+    inspText.inspectWordCountRange,
+  );
+  const websiteURL: OfferingWebsite = pd.items[7];
+  await inspectText(
+    ctx,
+    op,
+    websiteURL,
+    inspText.inspectWebsiteURL,
+  );
+  // TODO figure out if errors were encountered above and return invalid
+  return lf.lhcFormInspectionSuccess(active.inspectionTarget);
+}
+
 /**
  * OfferingProfileValidator is focused on testing values of fields. The 
  * OfferingProfileLhcForm can do all the structural validation but because
  * it is tightly tied to LCH Form JSON schema, we have to do values 
  * validation in this class instead of OfferingProfileLhcForm.
  */
-export class OfferingProfileValidator
-  extends inspLF.LhcFormInspectionSupplier<OfferingProfileLhcForm> {
+export class OfferingProfileValidator {
   static readonly singleton = new OfferingProfileValidator();
+  readonly inspectors = [inspectProductDetails];
 
   async inspect(
-    ctx: inspLF.LhcFormInspectionContext<OfferingProfileLhcForm>,
-    diags: inspLF.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
-  ): Promise<insp.InspectionResult> {
-    const op = ctx.form;
-    await this.inspectProductDetails(ctx, diags, op.items[1]);
-    return inspLF.lformInspectionSuccess<OfferingProfileLhcForm>(op);
-  }
-
-  protected async inspectProductDetails(
-    ctx: inspLF.LhcFormInspectionContext<OfferingProfileLhcForm>,
-    diags: inspLF.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
-    pd: ProductDetails,
-  ) {
-    const oneLiner: OfferingOneLinerDescription = pd.items[4];
-    await this.inspectText(
-      ctx,
-      diags,
-      oneLiner,
-      inspText.inspectWordCountRange,
-    );
-
-    const websiteURL: OfferingWebsite = pd.items[7];
-    await this.inspectText(
-      ctx,
-      diags,
-      websiteURL,
-      inspText.inspectWebsiteURL,
-    );
-  }
-
-  protected async inspectText(
-    ctx: inspLF.LhcFormInspectionContext<OfferingProfileLhcForm>,
-    diags: inspLF.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
-    item: lf.FormItem,
-    ...inspectors: inspText.TextInspector[]
-  ) {
-    const tidr = new inspText.TextInspectionDiagnosticsRecorder();
-    await inspText.TextInspectionSupplier.typical.inspect(
-      // TODO: need to figure out how to get proper value for each item
-      new inspText.TextInspectionContext(item.value?.toString() || ""),
-      tidr,
-      ...inspectors,
-    );
-    tidr.issues.forEach((issue) => diags.onIssue(issue, ctx));
-    tidr.exceptions.forEach((excp) =>
-      diags.onException(excp.exception, excp, ctx)
-    );
+    op: OfferingProfileLhcForm,
+  ): Promise<[
+    lf.TypicalLhcFormInspectionContext<OfferingProfileLhcForm>,
+    insp.InspectionResult<OfferingProfileLhcForm>,
+  ]> {
+    const ctx = new lf.TypicalLhcFormInspectionContext(op);
+    const ip = insp.inspectionPipe(ctx, ...this.inspectors);
+    const result = await ip(ctx);
+    return [ctx, result];
   }
 }
 
