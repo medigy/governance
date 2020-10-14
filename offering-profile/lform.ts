@@ -511,10 +511,12 @@ async function inspectText(
   const itCtx = new inspText.DerivedTextInspectionContext(
     form,
     lformCtx,
-    item.value.toString(),
   );
   const ip = insp.inspectionPipe(...inspectors);
-  const result = await ip(itCtx);
+  await ip(
+    itCtx,
+    inspText.textInspectionTarget(item.value.toString()),
+  );
 }
 
 async function inspectProductDetails(
@@ -573,8 +575,8 @@ async function inspectProductDetails(
     permaLink,
     // inspText.inspectPermaLink,
   );
-  // TODO figure out if errors were encountered above and return invalid
-  return lf.lhcFormInspectionSuccess(active.inspectionTarget);
+
+  return active;
 }
 
 async function inspectSocialPresence(
@@ -624,8 +626,7 @@ async function inspectSocialPresence(
     inspText.inspectWebsiteURL,
   );
 
-  // TODO figure out if errors were encountered above and return invalid
-  return lf.lhcFormInspectionSuccess(active.inspectionTarget);
+  return active;
 }
 
 async function inspectRespondantInformation(
@@ -674,8 +675,7 @@ async function inspectRespondantInformation(
     // inspText.inspectPhone,
   );
 
-  // TODO figure out if errors were encountered above and return invalid
-  return lf.lhcFormInspectionSuccess(active.inspectionTarget);
+  return active;
 }
 
 /**
@@ -698,11 +698,11 @@ export class OfferingProfileValidator {
     lf.TypicalLhcFormInspectionContext<OfferingProfileLhcForm>,
     insp.InspectionResult<OfferingProfileLhcForm>,
   ]> {
-    const ctx = new lf.TypicalLhcFormInspectionContext<OfferingProfileLhcForm>(
-      op,
-    );
+    const ctx = new lf.TypicalLhcFormInspectionContext<
+      OfferingProfileLhcForm
+    >();
     const ip = insp.inspectionPipe(...this.inspectors);
-    const result = await ip(ctx);
+    const result = await ip(ctx, op);
     return [ctx, result];
   }
 }
