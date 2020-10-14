@@ -508,12 +508,13 @@ async function inspectText(
     // TODO: if this is required, need to add error
     return;
   }
-  const itCtx = new inspText.TypicalTextInspectionContext(
+  const itCtx = new inspText.DerivedTextInspectionContext(
+    form,
+    lformCtx,
     item.value.toString(),
   );
-  const ip = insp.inspectionPipe(itCtx, ...inspectors);
+  const ip = insp.inspectionPipe(...inspectors);
   const result = await ip(itCtx);
-  lformCtx.diags.append(form, itCtx.diags, lformCtx);
 }
 
 async function inspectProductDetails(
@@ -700,7 +701,7 @@ export class OfferingProfileValidator {
     const ctx = new lf.TypicalLhcFormInspectionContext<OfferingProfileLhcForm>(
       op,
     );
-    const ip = insp.inspectionPipe(ctx, ...this.inspectors);
+    const ip = insp.inspectionPipe(...this.inspectors);
     const result = await ip(ctx);
     return [ctx, result];
   }
