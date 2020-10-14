@@ -86,7 +86,6 @@ export function validateEmitted(result: gd.StructuredDataTyperResult): void {
     console.log(
       `Using Deno dynamic import("${destRel}") to validate...`,
     );
-    // deno-lint-ignore no-undef
     import(destRel);
   }
 }
