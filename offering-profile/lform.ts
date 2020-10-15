@@ -705,6 +705,16 @@ export class OfferingProfileValidator {
     const result = await ip(ctx, op);
     return [ctx, result];
   }
+
+  async inspectConsole(
+    op: OfferingProfileLhcForm,
+  ): Promise<void> {
+    const ctx = new lf.ConsoleLhcFormInspectionContext<
+      OfferingProfileLhcForm
+    >(true);
+    const ip = insp.inspectionPipe(...this.inspectors);
+    await ip(ctx, op);
+  }
 }
 
 /**
@@ -717,19 +727,21 @@ export class OfferingProfileLhcFormJsonTyper extends gd.TypicalJsonTyper {
     options: {
       govnDataModuleRef: string;
       govnDataModuleImportDirective: string;
-      medigyGovnModuleTypeImportDirective: string;
+      medigyGovnModuleImportDirective: string;
     },
   ) {
     super(gd.defaultTypicalJsonTyperOptions(
       [
         options.govnDataModuleImportDirective,
-        options.medigyGovnModuleTypeImportDirective,
+        options.medigyGovnModuleImportDirective,
       ],
       "medigyGovn.offerProfile.lf.OfferingProfileLhcForm",
       {
         instanceName: "profile",
         emittedFileExtn: ".lhc-form.auto.ts",
         govnDataImportURL: options.govnDataModuleRef,
+        inspectorPropertyTS:
+          "dataInspector: async () => { medigyGovn.offerProfile.lf.OfferingProfileValidator.singleton.inspectConsole(profile) }",
       },
     ));
   }

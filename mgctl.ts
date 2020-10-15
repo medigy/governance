@@ -1,4 +1,4 @@
-import { govnData as gd, govnDataCLI as gdctl, path } from "./deps.ts";
+import { docopt, govnData as gd, govnDataCLI as gdctl, path } from "./deps.ts";
 import * as mod from "./mod.ts";
 
 const $VERSION = gdctl.determineVersion(import.meta.url, import.meta.main);
@@ -31,8 +31,7 @@ Options:
 `;
 
 export function govnDataModuleImportDirective(
-  { "--gd-mod-ref": moduleRef, "--gd-mod-deps": depsTs }:
-    gdctl.docopt.DocOptions,
+  { "--gd-mod-ref": moduleRef, "--gd-mod-deps": depsTs }: docopt.DocOptions,
 ): {
   govnDataModuleRef: string;
   govnDataModuleImportDirective: string;
@@ -56,8 +55,7 @@ export function govnDataModuleImportDirective(
 }
 
 export function medigyGovnModuleRef(
-  { "--mg-mod-ref": moduleRef, "--mg-mod-deps": depsTs }:
-    gdctl.docopt.DocOptions,
+  { "--mg-mod-ref": moduleRef, "--mg-mod-deps": depsTs }: docopt.DocOptions,
 ): {
   medigyGovnModuleImportDirective: string;
   medigyGovnModuleTypeImportDirective: string;
@@ -251,7 +249,7 @@ if (import.meta.main) {
       quantEvalFacetTyperCliHandler,
       quantEvalCampaignsTyperCliHandler,
     ],
-    (options: gdctl.docopt.DocOptions): gd.CliCmdHandlerContext => {
+    (options: docopt.DocOptions): gd.CliCmdHandlerContext => {
       return new gd.CliCmdHandlerContext(
         import.meta.url,
         options,
