@@ -295,130 +295,130 @@ export interface InstitutionProfileLhcForm extends lf.NihLhcForm {
   ];
 }
 
-async function inspectText(
-  lformCtx: lf.LhcFormInspectionContext<InstitutionProfileLhcForm>,
-  form: InstitutionProfileLhcForm,
-  item: lf.FormItem,
-  ...inspectors: inspText.TextInspector[]
-): Promise<void> {
-  if (!item.value) {
-    // TODO: if this is required, need to add error
-    return;
-  }
-  const itCtx = new inspText.DerivedTextInspectionContext(
-    form,
-    lformCtx,
-  );
-  const ip = insp.inspectionPipe(...inspectors);
-  await ip(
-    itCtx,
-    inspText.textInspectionTarget(item.value.toString()),
-  );
-}
+// async function inspectText(
+//   lformCtx: lf.LhcFormInspectionContext<InstitutionProfileLhcForm>,
+//   form: InstitutionProfileLhcForm,
+//   item: lf.FormItem,
+//   ...inspectors: inspText.TextInspector[]
+// ): Promise<void> {
+//   if (!item.value) {
+//     // TODO: if this is required, need to add error
+//     return;
+//   }
+//   const itCtx = new inspText.DerivedTextInspectionContext(
+//     form,
+//     lformCtx,
+//   );
+//   const ip = insp.inspectionPipe(...inspectors);
+//   await ip(
+//     itCtx,
+//     inspText.textInspectionTarget(item.value.toString()),
+//   );
+// }
 
-async function inspectInstitutionProfile(
-  ctx: lf.LhcFormInspectionContext<InstitutionProfileLhcForm>,
-  active: lf.LhcFormInspectionResult<InstitutionProfileLhcForm>,
-): Promise<lf.LhcFormInspectionResult<InstitutionProfileLhcForm>> {
-  const op = active.inspectionTarget;
-  const cd: ContactDetails = op.items[11];
-  const website: Website = cd.items[0];
-  await inspectText(
-    ctx,
-    op,
-    website,
-    inspText.inspectWebsiteURL,
-  );
-  const workEmail: WorkEmail = cd.items[1];
-  await inspectText(
-    ctx,
-    op,
-    workEmail,
-    // inspText.inspectEmail,
-  );
-  const workPhone: WorkPhone = cd.items[2];
-  await inspectText(
-    ctx,
-    op,
-    workPhone,
-    // inspText.inspectPhone,
-  );
-  const ca: CompanyAddress = op.items[12];
-  const houseOrBuilding: HouseOrBuilding = ca.items[0];
-  await inspectText(
-    ctx,
-    op,
-    houseOrBuilding,
-    // inspText.inspectAddressHouseBuilding,
-  );
-  const townOrCity: TownOrCity = ca.items[1];
-  await inspectText(
-    ctx,
-    op,
-    townOrCity,
-    // inspText.inspectAddressTownCity,
-  );
-  const stateOrProvince: StateOrProvince = ca.items[2];
-  await inspectText(
-    ctx,
-    op,
-    stateOrProvince,
-    // inspText.inspectAddressStateProvince,
-  );
-  const zipOrPostal: ZipOrPostal = ca.items[3];
-  await inspectText(
-    ctx,
-    op,
-    zipOrPostal,
-    // inspText.inspectAddressZipCode,
-  );
-  const countryOrRegion: CountryOrRegion = ca.items[4];
-  await inspectText(
-    ctx,
-    op,
-    countryOrRegion,
-    // inspText.inspectAddressCountryRegion,
-  );
+// async function inspectInstitutionProfile(
+//   ctx: lf.LhcFormInspectionContext<InstitutionProfileLhcForm>,
+//   active: lf.LhcFormInspectionResult<InstitutionProfileLhcForm>,
+// ): Promise<lf.LhcFormInspectionResult<InstitutionProfileLhcForm>> {
+//   const op = active.inspectionTarget;
+//   const cd: ContactDetails = op.items[11];
+//   const website: Website = cd.items[0];
+//   await inspectText(
+//     ctx,
+//     op,
+//     website,
+//     inspText.inspectWebsiteURL,
+//   );
+//   const workEmail: WorkEmail = cd.items[1];
+//   await inspectText(
+//     ctx,
+//     op,
+//     workEmail,
+//     // inspText.inspectEmail,
+//   );
+//   const workPhone: WorkPhone = cd.items[2];
+//   await inspectText(
+//     ctx,
+//     op,
+//     workPhone,
+//     // inspText.inspectPhone,
+//   );
+//   const ca: CompanyAddress = op.items[12];
+//   const houseOrBuilding: HouseOrBuilding = ca.items[0];
+//   await inspectText(
+//     ctx,
+//     op,
+//     houseOrBuilding,
+//     // inspText.inspectAddressHouseBuilding,
+//   );
+//   const townOrCity: TownOrCity = ca.items[1];
+//   await inspectText(
+//     ctx,
+//     op,
+//     townOrCity,
+//     // inspText.inspectAddressTownCity,
+//   );
+//   const stateOrProvince: StateOrProvince = ca.items[2];
+//   await inspectText(
+//     ctx,
+//     op,
+//     stateOrProvince,
+//     // inspText.inspectAddressStateProvince,
+//   );
+//   const zipOrPostal: ZipOrPostal = ca.items[3];
+//   await inspectText(
+//     ctx,
+//     op,
+//     zipOrPostal,
+//     // inspText.inspectAddressZipCode,
+//   );
+//   const countryOrRegion: CountryOrRegion = ca.items[4];
+//   await inspectText(
+//     ctx,
+//     op,
+//     countryOrRegion,
+//     // inspText.inspectAddressCountryRegion,
+//   );
 
-  return active;
-}
+//   return active;
+// }
 
-/**
- * InstitutionProfileValidator is focused on testing values of fields. The 
- * InstitutionProfileLhcForm can do all the structural validation but because
- * it is tightly tied to LCH Form JSON schema, we have to do values 
- * validation in this class instead of InstitutionProfileLhcForm.
- */
-export class InstitutionProfileValidator {
-  static readonly singleton = new InstitutionProfileValidator();
-  readonly inspectors = [
-    inspectInstitutionProfile,
-  ];
+// /**
+//  * InstitutionProfileValidator is focused on testing values of fields. The
+//  * InstitutionProfileLhcForm can do all the structural validation but because
+//  * it is tightly tied to LCH Form JSON schema, we have to do values
+//  * validation in this class instead of InstitutionProfileLhcForm.
+//  */
+// export class InstitutionProfileValidator {
+//   static readonly singleton = new InstitutionProfileValidator();
+//   readonly inspectors = [
+//     inspectInstitutionProfile,
+//   ];
 
-  async inspect(
-    op: InstitutionProfileLhcForm,
-  ): Promise<[
-    lf.TypicalLhcFormInspectionContext<InstitutionProfileLhcForm>,
-    insp.InspectionResult<InstitutionProfileLhcForm>,
-  ]> {
-    const ctx = new lf.TypicalLhcFormInspectionContext<
-      InstitutionProfileLhcForm
-    >();
-    const ip = insp.inspectionPipe(...this.inspectors);
-    const result = await ip(ctx, op);
-    return [ctx, result];
-  }
+//   async inspect(
+//     op: InstitutionProfileLhcForm,
+//   ): Promise<[
+//     lf.TypicalLhcFormInspectionContext<InstitutionProfileLhcForm>,
+//     insp.InspectionResult<InstitutionProfileLhcForm>,
+//   ]> {
+//     const ctx = new lf.TypicalLhcFormInspectionContext<
+//       InstitutionProfileLhcForm
+//     >();
+//     const ip = insp.inspectionPipe(...this.inspectors);
+//     const result = await ip(ctx, op);
+//     return [ctx, result];
+//   }
 
-  async inspectConsole(
-    op: InstitutionProfileLhcForm,
-  ): Promise<void> {
-    const ctx = new lf.ConsoleLhcFormInspectionContext<
-      InstitutionProfileLhcForm
-    >(true);
-    const ip = insp.inspectionPipe(...this.inspectors);
-    await ip(ctx, op);
-  }
-}
+//   async inspectConsole(
+//     op: InstitutionProfileLhcForm,
+//   ): Promise<void> {
+//     const ctx = new lf.ConsoleLhcFormInspectionContext<
+//       InstitutionProfileLhcForm
+//     >(true);
+//     const ip = insp.inspectionPipe(...this.inspectors);
+//     await ip(ctx, op);
+//   }
+// }
 
 /**
  * InstitutionProfileLhcFormJsonTyper takes an LHC Form JSON file and "types"

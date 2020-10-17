@@ -498,184 +498,122 @@ export interface OfferingProfileLhcForm extends lf.NihLhcForm {
   ];
 }
 
-async function inspectText(
-  lformCtx: lf.LhcFormInspectionContext<OfferingProfileLhcForm>,
-  form: OfferingProfileLhcForm,
-  item: lf.FormItem,
-  ...inspectors: inspText.TextInspector[]
-): Promise<void> {
-  if (!item.value) {
-    // TODO: if this is required, need to add error
-    return;
-  }
-  const itCtx = new inspText.DerivedTextInspectionContext(
-    form,
-    lformCtx,
-  );
-  const ip = insp.inspectionPipe(...inspectors);
-  await ip(
-    itCtx,
-    inspText.textInspectionTarget(item.value.toString()),
-  );
-}
+export async function inspectProductDetails(
+  target:
+    | OfferingProfileLhcForm
+    | lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
+  diags?: lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
+): Promise<
+  OfferingProfileLhcForm | lf.LhcFormInspectionResult<OfferingProfileLhcForm>
+> {
+  const opf: OfferingProfileLhcForm = lf.isLhcFormInspectionResult(target)
+    ? target.inspectionTarget
+    : target;
+  const pd: ProductDetails = opf.items[1];
 
-async function inspectProductDetails(
-  ctx: lf.LhcFormInspectionContext<OfferingProfileLhcForm>,
-  active: lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
-): Promise<lf.LhcFormInspectionResult<OfferingProfileLhcForm>> {
-  const op = active.inspectionTarget;
-  const pd: ProductDetails = op.items[1];
   const oneLiner: OfferingOneLinerDescription = pd.items[4];
-  await inspectText(
-    ctx,
-    op,
-    oneLiner,
-    inspText.inspectWordCountRange,
+  const oneLinerWC = await inspText.inspectWordCountRange(
+    oneLiner.value,
+    { options: inspText.inspectWordCountRangeOptions(40, 50) },
   );
+  if (diags && insp.isDiagnosable<string>(oneLinerWC)) {
+    diags.onFormItemIssue(opf, oneLiner, oneLinerWC.diagnostic);
+  }
+
   const websiteURL: OfferingWebsite = pd.items[7];
-  await inspectText(
-    ctx,
-    op,
-    websiteURL,
-    inspText.inspectWebsiteURL,
-  );
+  const websiteUrlInsp = await inspText.inspectWebsiteURL(websiteURL.value);
+  if (diags && insp.isDiagnosable<string>(websiteUrlInsp)) {
+    diags.onFormItemIssue(opf, websiteURL, websiteUrlInsp.diagnostic);
+  }
+
   /* Validate with reference source site */
   const license: OfferingLicense = pd.items[8];
-  await inspectText(
-    ctx,
-    op,
-    license,
-    // inspText.inspectLicense,
-  );
+
   /* Mandatory if "License Of The Offering" is Open Source
-   * GIT URL of the offering repository
-   * Validate with reference source site
-   */
+     * GIT URL of the offering repository
+     * Validate with reference source site
+     */
   const gitRepository: OfferingGitRepository = pd.items[9];
-  await inspectText(
-    ctx,
-    op,
-    gitRepository,
-    // inspText.inspectGitRepository,
-  );
+
   /* Maximum 45 to 50 words
-   */
+     */
   const description: OfferingDescription = pd.items[10];
-  await inspectText(
-    ctx,
-    op,
-    description,
-    inspText.inspectWordCountRange,
-  );
+
   /* Unique link in the entire system of offering */
   const permaLink: OfferingPermaLink = pd.items[11];
-  await inspectText(
-    ctx,
-    op,
-    permaLink,
-    // inspText.inspectPermaLink,
-  );
 
-  return active;
+  // we didn't modify the target, we added issues to diagnostics
+  return target;
 }
 
 async function inspectSocialPresence(
-  ctx: lf.LhcFormInspectionContext<OfferingProfileLhcForm>,
-  active: lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
-): Promise<lf.LhcFormInspectionResult<OfferingProfileLhcForm>> {
-  const op = active.inspectionTarget;
-  const sp: SocialPresence = op.items[2];
+  target:
+    | OfferingProfileLhcForm
+    | lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
+  diags?: lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
+): Promise<
+  OfferingProfileLhcForm | lf.LhcFormInspectionResult<OfferingProfileLhcForm>
+> {
+  const opf: OfferingProfileLhcForm = lf.isLhcFormInspectionResult(target)
+    ? target.inspectionTarget
+    : target;
+  const sp: SocialPresence = opf.items[2];
+
   /* Facebook URL, to be verified in Facebook
    * Validate with reference source site 
    */
   const facebookLink: SocialPresenceFacebookLink = sp.items[0];
-  await inspectText(
-    ctx,
-    op,
-    facebookLink,
-    inspText.inspectWebsiteURL,
-  );
+
   /* Twitter URL, to be verified in Twitter
    * Validate with reference source site 
    */
   const twitterLink: SocialPresenceTwitterLink = sp.items[1];
-  await inspectText(
-    ctx,
-    op,
-    twitterLink,
-    inspText.inspectWebsiteURL,
-  );
+
   /* LinkedIn URL, to be verified in LinkedIn
    * Validate with reference source site 
    */
   const linkedInLink: SocialPresenceLinkedInLink = sp.items[2];
-  await inspectText(
-    ctx,
-    op,
-    linkedInLink,
-    inspText.inspectWebsiteURL,
-  );
+
   /* Instagram URL, to be verified in Instagram
    * Validate with reference source site 
    */
   const instagramLink: SocialPresenceInstagramLink = sp.items[3];
-  await inspectText(
-    ctx,
-    op,
-    instagramLink,
-    inspText.inspectWebsiteURL,
-  );
 
-  return active;
+  // we didn't modify the target, we added issues to diagnostics
+  return target;
 }
 
-async function inspectRespondantInformation(
-  ctx: lf.LhcFormInspectionContext<OfferingProfileLhcForm>,
-  active: lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
-): Promise<lf.LhcFormInspectionResult<OfferingProfileLhcForm>> {
-  const op = active.inspectionTarget;
-  const ri: RespondentContactInformation = op.items[0];
-  // Check for the email verification using tools like https://email-checker.net
-  const respondantEmail: RespondentEmailAddress = ri.items[1];
-  await inspectText(
-    ctx,
-    op,
-    respondantEmail,
-    // inspText.inspectEmail,
-  );
+async function inspectRespondentContactInformation(
+  target:
+    | OfferingProfileLhcForm
+    | lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
+  diags?: lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
+): Promise<
+  OfferingProfileLhcForm | lf.LhcFormInspectionResult<OfferingProfileLhcForm>
+> {
+  const opf: OfferingProfileLhcForm = lf.isLhcFormInspectionResult(target)
+    ? target.inspectionTarget
+    : target;
+  const rci: RespondentContactInformation = opf.items[0];
 
   // Check for the email verification using tools like https://email-checker.net
-  const respondantVendorEmail: RespondentVendorEmailAddress = ri.items[4];
-  await inspectText(
-    ctx,
-    op,
-    respondantVendorEmail,
-    // inspText.inspectEmail,
-  );
+  const respondantEmail: RespondentEmailAddress = rci.items[1];
+
+  // Check for the email verification using tools like https://email-checker.net
+  const respondantVendorEmail: RespondentVendorEmailAddress = rci.items[4];
 
   /* Check for US number formatting
    * Validate with reference source site if possible
    */
-  const respondantContactNumber: RespondentContactPhoneNumber = ri.items[2];
-  await inspectText(
-    ctx,
-    op,
-    respondantContactNumber,
-    // inspText.inspectPhone,
-  );
+  const respondantContactNumber: RespondentContactPhoneNumber = rci.items[2];
 
   /* Check for US number formatting
    * Validate with reference source site if possible
    */
-  const respondantVendorContact: RespondentVendorPhoneNumber = ri.items[5];
-  await inspectText(
-    ctx,
-    op,
-    respondantVendorContact,
-    // inspText.inspectPhone,
-  );
+  const respondantVendorContact: RespondentVendorPhoneNumber = rci.items[5];
 
-  return active;
+  // we didn't modify the target, we added issues to diagnostics
+  return target;
 }
 
 /**
@@ -689,31 +627,28 @@ export class OfferingProfileValidator {
   readonly inspectors = [
     inspectProductDetails,
     inspectSocialPresence,
-    inspectRespondantInformation,
+    inspectRespondentContactInformation,
   ];
 
   async inspect(
-    op: OfferingProfileLhcForm,
-  ): Promise<[
-    lf.TypicalLhcFormInspectionContext<OfferingProfileLhcForm>,
-    insp.InspectionResult<OfferingProfileLhcForm>,
-  ]> {
-    const ctx = new lf.TypicalLhcFormInspectionContext<
+    opf: OfferingProfileLhcForm,
+  ): Promise<lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>> {
+    const diags = new lf.TypicalLhcFormInspectionDiags<
       OfferingProfileLhcForm
     >();
-    const ip = insp.inspectionPipe(...this.inspectors);
-    const result = await ip(ctx, op);
-    return [ctx, result];
+    const ip = lf.lhcFormInspectionPipe(...this.inspectors);
+    await ip(opf, diags);
+    return diags;
   }
 
   async inspectConsole(
-    op: OfferingProfileLhcForm,
+    opf: OfferingProfileLhcForm,
   ): Promise<void> {
-    const ctx = new lf.ConsoleLhcFormInspectionContext<
+    const diags = new lf.ConsoleLhcFormInspectionDiags<
       OfferingProfileLhcForm
-    >(true);
-    const ip = insp.inspectionPipe(...this.inspectors);
-    await ip(ctx, op);
+    >(new lf.TypicalLhcFormInspectionDiags(), true);
+    const ip = lf.lhcFormInspectionPipe(...this.inspectors);
+    await ip(opf, diags);
   }
 }
 
