@@ -502,7 +502,6 @@ export async function inspectProductDetails(
   target:
     | OfferingProfileLhcForm
     | lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
-  diags?: lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
 ): Promise<
   OfferingProfileLhcForm | lf.LhcFormInspectionResult<OfferingProfileLhcForm>
 > {
@@ -510,21 +509,29 @@ export async function inspectProductDetails(
     ? target.inspectionTarget
     : target;
   const pd: ProductDetails = opf.items[1];
+  const diags = new lf.TypicalLhcFormInspectionDiags<OfferingProfileLhcForm>(
+    insp.defaultInspectionContext(),
+  );
+  const ancestors = [pd];
 
   const oneLiner: OfferingOneLinerDescription = pd.items[4];
-  const oneLinerWC = await inspText.inspectWordCountRange(
-    oneLiner.value,
-    { options: inspText.inspectWordCountRangeOptions(40, 50) },
+  diags.onFormItemInspection(
+    opf,
+    oneLiner,
+    await inspText.inspectWordCountRange(
+      oneLiner.value,
+      { options: inspText.inspectWordCountRangeOptions(10, 15) },
+    ),
+    ancestors,
   );
-  if (diags && insp.isDiagnosable<string>(oneLinerWC)) {
-    diags.onFormItemIssue(opf, oneLiner, oneLinerWC.diagnostic);
-  }
 
   const websiteURL: OfferingWebsite = pd.items[7];
-  const websiteUrlInsp = await inspText.inspectWebsiteURL(websiteURL.value);
-  if (diags && insp.isDiagnosable<string>(websiteUrlInsp)) {
-    diags.onFormItemIssue(opf, websiteURL, websiteUrlInsp.diagnostic);
-  }
+  diags.onFormItemInspection(
+    opf,
+    websiteURL,
+    await inspText.inspectWebsiteURL(websiteURL.value),
+    ancestors,
+  );
 
   /* Validate with reference source site */
   const license: OfferingLicense = pd.items[8];
@@ -535,15 +542,28 @@ export async function inspectProductDetails(
      */
   const gitRepository: OfferingGitRepository = pd.items[9];
 
-  /* Maximum 45 to 50 words
-     */
   const description: OfferingDescription = pd.items[10];
+  diags.onFormItemInspection(
+    opf,
+    description,
+    await inspText.inspectWordCountRange(
+      description.value,
+      { options: inspText.inspectWordCountRangeOptions(15, 50) },
+    ),
+    ancestors,
+  );
 
-  /* Unique link in the entire system of offering */
   const permaLink: OfferingPermaLink = pd.items[11];
+  diags.onFormItemInspection(
+    opf,
+    permaLink,
+    await inspText.inspectWebsiteURL(permaLink.value),
+    ancestors,
+  );
 
-  // we didn't modify the target, we added issues to diagnostics
-  return target;
+  return diags.inspectionIssues.length > 0
+    ? insp.mergeDiagsIntoIssue(target, diags)
+    : target;
 }
 
 async function inspectSocialPresence(
@@ -635,7 +655,7 @@ export class OfferingProfileValidator {
   ): Promise<lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>> {
     const diags = new lf.TypicalLhcFormInspectionDiags<
       OfferingProfileLhcForm
-    >();
+    >(lf.lhcFormInspectionPipeContent());
     const ip = lf.lhcFormInspectionPipe(...this.inspectors);
     await ip(opf, diags);
     return diags;
@@ -646,7 +666,10 @@ export class OfferingProfileValidator {
   ): Promise<void> {
     const diags = new lf.ConsoleLhcFormInspectionDiags<
       OfferingProfileLhcForm
-    >(new lf.TypicalLhcFormInspectionDiags(), true);
+    >(
+      new lf.TypicalLhcFormInspectionDiags(lf.lhcFormInspectionPipeContent()),
+      true,
+    );
     const ip = lf.lhcFormInspectionPipe(...this.inspectors);
     await ip(opf, diags);
   }
