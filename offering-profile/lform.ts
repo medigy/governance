@@ -566,7 +566,6 @@ export async function inspectProductDetails(
   if (
     lfih.isConstrainedListItemNotSingleValue(license, offeringLicenseCommercial)
   ) {
-    //console.dir(offeringLicenseCommercial);
     diags.onFormItemInspection(
       opf,
       gitRepository,
