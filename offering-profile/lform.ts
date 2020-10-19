@@ -4,6 +4,7 @@ import {
   inspText,
   nihLhcForms as lf,
 } from "./deps.ts";
+import * as lfih from "../lhc-form-inspect-helpers.ts";
 
 export interface RespondentCompanyName extends lf.RequiredUniqueTextItem {
   readonly questionCode: "company-name";
@@ -327,6 +328,16 @@ export interface OfferingWebsiteCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
+// TODO: @Alan or @Geo please update this list and all constrained lists
+export type OfferingLicenseListItemValue = lf.ConstrainedListItemValue;
+export const OfferingLicenseContrainedListValues:
+  OfferingLicenseListItemValue[] = [
+    { code: "Commercial", text: "Commercial" },
+    // TODO: @Alan or @Geo add other legitimate values, especially if the item
+    //       is part of an inspection
+  ];
+export const offeringLicenseCommercial = OfferingLicenseContrainedListValues[0];
+
 export interface OfferingLicense extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-22";
   readonly localQuestionCode: "Q005-22";
@@ -337,7 +348,7 @@ export interface OfferingLicense extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingLicenseCodeList,
   ];
-  readonly value: lf.ConstrainedListItemValue;
+  readonly value: OfferingLicenseListItemValue;
 }
 
 export interface OfferingLicenseCodeList extends lf.FormItem {
@@ -536,13 +547,33 @@ export async function inspectProductDetails(
   );
 
   /* Validate with reference source site */
+  // TODO: @Alan or @Geo please set OfferingLicense.value to specific constrained list
+  //       which allows us to check the value; if you cannot figure it out quickly, ask
+  //       @Shahid for help.
   const license: OfferingLicense = pd.items[8];
+  diags.onFormItemInspection(
+    opf,
+    license,
+    lfih.inspectRequiredFormItem(opf, license),
+    ancestors,
+  );
 
   /* Mandatory if "License Of The Offering" is Open Source
      * GIT URL of the offering repository
      * Validate with reference source site
      */
   const gitRepository: OfferingGitRepository = pd.items[9];
+  if (
+    lfih.isConstrainedListItemNotSingleValue(license, offeringLicenseCommercial)
+  ) {
+    //console.dir(offeringLicenseCommercial);
+    diags.onFormItemInspection(
+      opf,
+      gitRepository,
+      await inspText.inspectWebsiteURL(gitRepository.value),
+      ancestors,
+    );
+  }
 
   const description: OfferingDescription = pd.items[10];
   diags.onFormItemInspection(
@@ -581,6 +612,7 @@ async function inspectSocialPresence(
     ? target.inspectionTarget
     : target;
   const sp: SocialPresence = opf.items[2];
+  const ancestors = [sp];
 
   /* Facebook URL, to be verified in Facebook
    * Validate with reference source site 
@@ -617,6 +649,7 @@ async function inspectRespondentContactInformation(
     ? target.inspectionTarget
     : target;
   const rci: RespondentContactInformation = opf.items[0];
+  const ancestors = [rci];
 
   // Check for the email verification using tools like https://email-checker.net
   const respondantEmail: RespondentEmailAddress = rci.items[1];
