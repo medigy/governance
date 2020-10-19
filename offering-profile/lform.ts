@@ -520,7 +520,9 @@ export async function inspectProductDetails(
     oneLiner,
     await inspText.inspectWordCountRange(
       oneLiner.value,
-      { options: inspText.inspectWordCountRangeOptions(10, 15) },
+      insp.inspectionContext<inspText.InspectWordCountRangeSupplier>({
+        inspectWordCountRange: insp.numericRange(10, 15),
+      }),
     ),
     ancestors,
   );
@@ -548,7 +550,9 @@ export async function inspectProductDetails(
     description,
     await inspText.inspectWordCountRange(
       description.value,
-      { options: inspText.inspectWordCountRangeOptions(15, 50) },
+      insp.inspectionContext<inspText.InspectWordCountRangeSupplier>({
+        inspectWordCountRange: insp.numericRange(15, 50),
+      }),
     ),
     ancestors,
   );
@@ -570,7 +574,6 @@ async function inspectSocialPresence(
   target:
     | OfferingProfileLhcForm
     | lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
-  diags?: lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
 ): Promise<
   OfferingProfileLhcForm | lf.LhcFormInspectionResult<OfferingProfileLhcForm>
 > {
@@ -607,7 +610,6 @@ async function inspectRespondentContactInformation(
   target:
     | OfferingProfileLhcForm
     | lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
-  diags?: lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
 ): Promise<
   OfferingProfileLhcForm | lf.LhcFormInspectionResult<OfferingProfileLhcForm>
 > {
