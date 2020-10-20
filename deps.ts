@@ -12,9 +12,7 @@ export * as serializeJS from "https://denopkg.com/shah/javascript-stringify@v2.0
 export * as serializeJsStringify from "https://denopkg.com/shah/javascript-stringify@v2.0.4/src/stringify.ts";
 export * as serializeJsTypes from "https://denopkg.com/shah/javascript-stringify@v2.0.4/src/types.ts";
 export * as inflect from "https://denopkg.com/shah/text-inflect@v1.0.4/mod.ts";
-export * as inspect from "https://denopkg.com/shah/ts-inspect@v0.8.2/mod.ts";
-export * as inspText from "https://denopkg.com/shah/ts-inspect@v0.8.2/text/mod.ts";
-// export * as inspect from "../../shah/ts-inspect/mod.ts";
-// export * as inspText from "../../shah/ts-inspect/text/mod.ts";
-export * as nihLhcForms from "https://denopkg.com/shah/ts-lhncbc-lforms@v2.0.3/mod.ts";
-export * as safety from "https://denopkg.com/shah/ts-safety@v0.2.5/mod.ts";
+export * as inspect from "https://denopkg.com/shah/ts-inspect@v0.8.4/mod.ts";
+export * as inspText from "https://denopkg.com/shah/ts-inspect@v0.8.4/text/mod.ts";
+export * as nihLhcForms from "https://denopkg.com/shah/ts-lhncbc-lforms@v2.0.4/mod.ts";
+export * as safety from "https://denopkg.com/shah/ts-safety@v0.3.0/mod.ts";
