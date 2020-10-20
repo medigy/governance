@@ -125,6 +125,13 @@ export interface RespondentVendorPhoneNumberCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
+export type OfferingRespondentSourceItemValue = lf.ConstrainedListItemValue;
+/* The Constrained List values should come from the external OWL URL. 
+ * Need to write function to get the list.
+ */
+export const OfferingRespondentSourceContrainedListValues:
+  OfferingRespondentSourceItemValue[] = [];
+
 export interface RespondentSource extends lf.ConstrainedListItem {
   readonly questionCode: "Q002-10";
   readonly localQuestionCode: "Q002-10";
@@ -135,7 +142,7 @@ export interface RespondentSource extends lf.ConstrainedListItem {
   readonly codeList: [
     RespondentSourceCodeList,
   ];
-  readonly value: lf.ConstrainedListItemValue;
+  readonly value: OfferingRespondentSourceItemValue;
 }
 
 export interface RespondentSourceCodeList extends lf.FormItem {
@@ -180,6 +187,16 @@ export interface ProductDetails extends lf.FormItem {
   ];
 }
 
+export type OfferingTypeListItemValue = lf.ConstrainedListItemValue;
+export const OfferingTypeConstrainedListValues: OfferingTypeListItemValue[] = [
+  { code: "0", text: "Product" },
+  { code: "1", text: "Solution" },
+  { code: "2", text: "Service" },
+];
+export const offeringTypeProduct = OfferingTypeConstrainedListValues[0];
+export const offeringTypeSolution = OfferingTypeConstrainedListValues[1];
+export const offeringTypeService = OfferingTypeConstrainedListValues[2];
+
 export interface OfferingType extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-14";
   readonly localQuestionCode: "Q005-14";
@@ -189,7 +206,7 @@ export interface OfferingType extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingTypeCodeList,
   ];
-  readonly value: lf.ConstrainedListItemValue;
+  readonly value: OfferingTypeListItemValue;
 }
 
 export interface OfferingTypeCodeList extends lf.FormItem {
@@ -197,6 +214,15 @@ export interface OfferingTypeCodeList extends lf.FormItem {
   readonly display: "Type of offering*";
   readonly system: "http://loinc.org";
 }
+
+export type OfferingOwnerCheckListItemValue = lf.ConstrainedListItemValue;
+export const OfferingOwnerConstrainedListValues:
+  OfferingOwnerCheckListItemValue[] = [
+    { code: "Yes", text: "Yes" },
+    { code: "No", text: "No" },
+  ];
+export const offeringOwnerCheckYes = OfferingOwnerConstrainedListValues[0];
+export const offeringOwnerCheckNo = OfferingOwnerConstrainedListValues[1];
 
 export interface OfferingOwnerCheck extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-18";
@@ -206,7 +232,7 @@ export interface OfferingOwnerCheck extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingOwnerCheckCodeList,
   ];
-  readonly value: lf.ConstrainedListItemValue;
+  readonly value: OfferingOwnerCheckListItemValue;
 }
 
 export interface OfferingOwnerCheckCodeList extends lf.FormItem {
@@ -215,6 +241,11 @@ export interface OfferingOwnerCheckCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
+export type OfferingTopicsItemValue = lf.ConstrainedListItemValue;
+/* The Constrained List values should come from the external OWL URL. 
+ * Need to write function to get the list.
+ */
+export const OfferingTopicsContrainedListValues: OfferingTopicsItemValue[] = [];
 export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-01";
   readonly localQuestionCode: "Q005-01";
@@ -225,7 +256,7 @@ export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingTopicsCodeList,
   ];
-  readonly value: lf.ConstrainedListItemValue[];
+  readonly value: OfferingTopicsItemValue[];
 }
 
 export interface OfferingTopicsCodeList extends lf.FormItem {
@@ -272,6 +303,18 @@ export interface OfferingOneLinerDescriptionCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
+export type OfferingFeaturedProductCheckListItemValue =
+  lf.ConstrainedListItemValue;
+export const OfferingFeaturedProductConstrainedListValues:
+  OfferingFeaturedProductCheckListItemValue[] = [
+    { code: "0", text: "Yes" },
+    { code: "2", text: "No" },
+  ];
+export const offeringFeaturedCheckYes =
+  OfferingFeaturedProductConstrainedListValues[0];
+export const offeringFeaturedCheckNo =
+  OfferingFeaturedProductConstrainedListValues[1];
+
 export interface OfferingFeaturedProductCheck extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-12";
   readonly localQuestionCode: "Q005-12";
@@ -282,7 +325,7 @@ export interface OfferingFeaturedProductCheck extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingFeaturedProductCheckCodeList,
   ];
-  readonly value: lf.ConstrainedListItemValue;
+  readonly value: OfferingFeaturedProductCheckListItemValue;
 }
 
 export interface OfferingFeaturedProductCheckCodeList extends lf.FormItem {
@@ -330,6 +373,9 @@ export interface OfferingWebsiteCodeList extends lf.FormItem {
 
 // TODO: @Alan or @Geo please update this list and all constrained lists
 export type OfferingLicenseListItemValue = lf.ConstrainedListItemValue;
+/* The Constrained List values should come from the external OWL URL. 
+ * Need to write function to get the list.
+ */
 export const OfferingLicenseContrainedListValues:
   OfferingLicenseListItemValue[] = [
     { code: "Commercial", text: "Commercial" },
@@ -591,7 +637,7 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     permaLink,
-    await inspText.inspectWebsiteURL(permaLink.value),
+    lfih.inspectRequiredFormItem(opf, permaLink),
     ancestors,
   );
 

@@ -37,6 +37,13 @@ export function inspectRequiredFormItem<
   // TODO -- @alan or @geo check all the ways fields can miss data
   if (!item.value) {
     return lf.lchFormItemIssue(form, item, "Value required");
+  } else if (item.value == "" || item.value == null) {
+    return lf.lchFormItemIssue(form, item, "Value required");
+  } else if (typeof item.value === "object") {
+    /* @shahid  Not able to access text or code from item value object
+     * This may need to change in schema lhc form gsd schema lform.ts file
+     */
+    //item.value.text && item.value.code need to be validated
   }
 
   return item;
