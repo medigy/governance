@@ -658,27 +658,49 @@ async function inspectSocialPresence(
     : target;
   const sp: SocialPresence = opf.items[2];
   const ancestors = [sp];
-
+  const diags = new lf.TypicalLhcFormInspectionDiags<OfferingProfileLhcForm>(
+    insp.defaultInspectionContext(),
+  );
   /* Facebook URL, to be verified in Facebook
    * Validate with reference source site 
    */
   const facebookLink: SocialPresenceFacebookLink = sp.items[0];
-
+  diags.onFormItemInspection(
+    opf,
+    facebookLink,
+    await lfih.inspectFacebookURL(facebookLink.value),
+    ancestors,
+  );
   /* Twitter URL, to be verified in Twitter
    * Validate with reference source site 
    */
   const twitterLink: SocialPresenceTwitterLink = sp.items[1];
-
+  diags.onFormItemInspection(
+    opf,
+    twitterLink,
+    await lfih.inspectTwitterURL(twitterLink.value),
+    ancestors,
+  );
   /* LinkedIn URL, to be verified in LinkedIn
    * Validate with reference source site 
    */
   const linkedInLink: SocialPresenceLinkedInLink = sp.items[2];
-
+  diags.onFormItemInspection(
+    opf,
+    linkedInLink,
+    await lfih.inspectLinkedInURL(linkedInLink.value),
+    ancestors,
+  );
   /* Instagram URL, to be verified in Instagram
    * Validate with reference source site 
    */
   const instagramLink: SocialPresenceInstagramLink = sp.items[3];
-
+  diags.onFormItemInspection(
+    opf,
+    instagramLink,
+    await lfih.inspectInstagramURL(instagramLink.value),
+    ancestors,
+  );
   // we didn't modify the target, we added issues to diagnostics
   return target;
 }
@@ -695,23 +717,46 @@ async function inspectRespondentContactInformation(
     : target;
   const rci: RespondentContactInformation = opf.items[0];
   const ancestors = [rci];
+  const diags = new lf.TypicalLhcFormInspectionDiags<OfferingProfileLhcForm>(
+    insp.defaultInspectionContext(),
+  );
 
   // Check for the email verification using tools like https://email-checker.net
   const respondantEmail: RespondentEmailAddress = rci.items[1];
-
+  diags.onFormItemInspection(
+    opf,
+    respondantEmail,
+    await lfih.inspectEmailAddress(respondantEmail.value),
+    ancestors,
+  );
   // Check for the email verification using tools like https://email-checker.net
   const respondantVendorEmail: RespondentVendorEmailAddress = rci.items[4];
-
+  diags.onFormItemInspection(
+    opf,
+    respondantVendorEmail,
+    await lfih.inspectEmailAddress(respondantVendorEmail.value),
+    ancestors,
+  );
   /* Check for US number formatting
    * Validate with reference source site if possible
    */
   const respondantContactNumber: RespondentContactPhoneNumber = rci.items[2];
-
+  diags.onFormItemInspection(
+    opf,
+    respondantContactNumber,
+    await lfih.inspectPhoneNumberUSFormat(respondantContactNumber.value),
+    ancestors,
+  );
   /* Check for US number formatting
    * Validate with reference source site if possible
    */
   const respondantVendorContact: RespondentVendorPhoneNumber = rci.items[5];
-
+  diags.onFormItemInspection(
+    opf,
+    respondantVendorContact,
+    await lfih.inspectPhoneNumberUSFormat(respondantVendorContact.value),
+    ancestors,
+  );
   // we didn't modify the target, we added issues to diagnostics
   return target;
 }
