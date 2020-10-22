@@ -14,12 +14,12 @@ export interface RespondentCompanyName extends lf.RequiredUniqueTextItem {
   readonly linkId: "/Q002/company-name";
   readonly codingInstructions: "Full name of the company including Inc, LLC";
   readonly codeList: [
-    RespondantCompanyNameCodeList,
+    RespondentCompanyNameCodeList,
   ];
   readonly value: string;
 }
 
-export interface RespondantCompanyNameCodeList extends lf.FormItem {
+export interface RespondentCompanyNameCodeList extends lf.FormItem {
   readonly code: "company-name";
   readonly display: "Name of the company providing this offering*";
   readonly system: "http://loinc.org";
@@ -34,12 +34,12 @@ export interface RespondentEmailAddress extends lf.UniqueEmailAddressItem {
   readonly codingInstructions:
     "Valid email id. Verify using https://email-checker.net/";
   readonly codeList: [
-    RespondantEmailAddresscCodeList,
+    RespondentEmailAddresscCodeList,
   ];
   readonly value: string;
 }
 
-export interface RespondantEmailAddresscCodeList extends lf.FormItem {
+export interface RespondentEmailAddresscCodeList extends lf.FormItem {
   readonly code: "Q002-05";
   readonly display: "Email address of the company*";
   readonly system: "http://loinc.org";
@@ -53,12 +53,12 @@ export interface RespondentContactPhoneNumber extends lf.UniquePhoneItem {
   readonly linkId: "/Q002/Q002-06";
   readonly codingInstructions: "Valid phone number with country code";
   readonly codeList: [
-    RespondantContactPhoneNumberCodeList,
+    RespondentContactPhoneNumberCodeList,
   ];
   readonly value: string;
 }
 
-export interface RespondantContactPhoneNumberCodeList extends lf.FormItem {
+export interface RespondentContactPhoneNumberCodeList extends lf.FormItem {
   readonly code: "Q002-06";
   readonly display: "Contact number of the company*";
   readonly system: "http://loinc.org";
@@ -193,9 +193,6 @@ export const OfferingTypeConstrainedListValues: OfferingTypeListItemValue[] = [
   { code: "1", text: "Solution" },
   { code: "2", text: "Service" },
 ];
-export const offeringTypeProduct = OfferingTypeConstrainedListValues[0];
-export const offeringTypeSolution = OfferingTypeConstrainedListValues[1];
-export const offeringTypeService = OfferingTypeConstrainedListValues[2];
 
 export interface OfferingType extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-14";
@@ -221,8 +218,6 @@ export const OfferingOwnerConstrainedListValues:
     { code: "Yes", text: "Yes" },
     { code: "No", text: "No" },
   ];
-export const offeringOwnerCheckYes = OfferingOwnerConstrainedListValues[0];
-export const offeringOwnerCheckNo = OfferingOwnerConstrainedListValues[1];
 
 export interface OfferingOwnerCheck extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-18";
@@ -310,10 +305,6 @@ export const OfferingFeaturedProductConstrainedListValues:
     { code: "0", text: "Yes" },
     { code: "2", text: "No" },
   ];
-export const offeringFeaturedCheckYes =
-  OfferingFeaturedProductConstrainedListValues[0];
-export const offeringFeaturedCheckNo =
-  OfferingFeaturedProductConstrainedListValues[1];
 
 export interface OfferingFeaturedProductCheck extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-12";
@@ -571,6 +562,43 @@ export async function inspectProductDetails(
   );
   const ancestors = [pd];
 
+  /* Validate the Offering Type User selected value
+   * against the Offering Type Constrained List 
+   */
+  const offeringType: OfferingType = pd.items[0];
+  diags.onFormItemInspection(
+    opf,
+    offeringType,
+    lfih.isConstrainedListItemArrayValue(
+      offeringType,
+      OfferingTypeConstrainedListValues,
+    ),
+    ancestors,
+  );
+
+  /* Validate the Offering Owner Check User selected value
+   * against the Offering Type Constrained List 
+   */
+  const offeringOwnerCheck: OfferingOwnerCheck = pd.items[1];
+  diags.onFormItemInspection(
+    opf,
+    offeringOwnerCheck,
+    lfih.isConstrainedListItemArrayValue(
+      offeringOwnerCheck,
+      OfferingOwnerConstrainedListValues,
+    ),
+    ancestors,
+  );
+
+  /* Validate the Offering Name against null value */
+  const offeringName: OfferingName = pd.items[3];
+  diags.onFormItemInspection(
+    opf,
+    offeringName,
+    lfih.inspectRequiredFormItem(opf, offeringName),
+    ancestors,
+  );
+
   const oneLiner: OfferingOneLinerDescription = pd.items[4];
   diags.onFormItemInspection(
     opf,
@@ -581,6 +609,30 @@ export async function inspectProductDetails(
         inspectWordCountRange: insp.numericRange(10, 15),
       }),
     ),
+    ancestors,
+  );
+
+  /* Validate the Offering Owner Check User selected value
+   * against the Offering Type Constrained List 
+   */
+  const offeringFeaturedProductCheck: OfferingFeaturedProductCheck =
+    pd.items[5];
+  diags.onFormItemInspection(
+    opf,
+    offeringFeaturedProductCheck,
+    lfih.isConstrainedListItemArrayValue(
+      offeringFeaturedProductCheck,
+      OfferingFeaturedProductConstrainedListValues,
+    ),
+    ancestors,
+  );
+
+  /* Validate the Offering Created Date against null value */
+  const createdDate: OfferingCreatedDate = pd.items[6];
+  diags.onFormItemInspection(
+    opf,
+    createdDate,
+    lfih.inspectRequiredFormItem(opf, createdDate),
     ancestors,
   );
 
@@ -646,7 +698,7 @@ export async function inspectProductDetails(
     : target;
 }
 
-async function inspectSocialPresence(
+export async function inspectSocialPresence(
   target:
     | OfferingProfileLhcForm
     | lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
@@ -707,7 +759,7 @@ async function inspectSocialPresence(
     : target;
 }
 
-async function inspectRespondentContactInformation(
+export async function inspectRespondentContactInformation(
   target:
     | OfferingProfileLhcForm
     | lf.LhcFormInspectionResult<OfferingProfileLhcForm>,
@@ -723,40 +775,58 @@ async function inspectRespondentContactInformation(
     insp.defaultInspectionContext(),
   );
 
-  // Check for the email verification using tools like https://email-checker.net
-  const respondantEmail: RespondentEmailAddress = rci.items[1];
+  /* Validate the Company Name against null value */
+  const respondentCompanyName: RespondentCompanyName = rci.items[0];
   diags.onFormItemInspection(
     opf,
-    respondantEmail,
-    await lfih.inspectEmailAddress(respondantEmail.value),
+    respondentCompanyName,
+    lfih.inspectRequiredFormItem(opf, respondentCompanyName),
+    ancestors,
+  );
+
+  /* Validate the Vendor Name against null value */
+  const respondentVendorName: RespondentVendorName = rci.items[3];
+  diags.onFormItemInspection(
+    opf,
+    respondentVendorName,
+    lfih.inspectRequiredFormItem(opf, respondentVendorName),
+    ancestors,
+  );
+
+  // Check for the email verification using tools like https://email-checker.net
+  const respondentEmail: RespondentEmailAddress = rci.items[1];
+  diags.onFormItemInspection(
+    opf,
+    respondentEmail,
+    await lfih.inspectEmailAddress(respondentEmail.value),
     ancestors,
   );
   // Check for the email verification using tools like https://email-checker.net
-  const respondantVendorEmail: RespondentVendorEmailAddress = rci.items[4];
+  const respondentVendorEmail: RespondentVendorEmailAddress = rci.items[4];
   diags.onFormItemInspection(
     opf,
-    respondantVendorEmail,
-    await lfih.inspectEmailAddress(respondantVendorEmail.value),
+    respondentVendorEmail,
+    await lfih.inspectEmailAddress(respondentVendorEmail.value),
     ancestors,
   );
   /* Check for US number formatting
    * Validate with reference source site if possible
    */
-  const respondantContactNumber: RespondentContactPhoneNumber = rci.items[2];
+  const respondentContactNumber: RespondentContactPhoneNumber = rci.items[2];
   diags.onFormItemInspection(
     opf,
-    respondantContactNumber,
-    await lfih.inspectPhoneNumberUSFormat(respondantContactNumber.value),
+    respondentContactNumber,
+    await lfih.inspectPhoneNumberUSFormat(respondentContactNumber.value),
     ancestors,
   );
   /* Check for US number formatting
    * Validate with reference source site if possible
    */
-  const respondantVendorContact: RespondentVendorPhoneNumber = rci.items[5];
+  const respondentVendorContact: RespondentVendorPhoneNumber = rci.items[5];
   diags.onFormItemInspection(
     opf,
-    respondantVendorContact,
-    await lfih.inspectPhoneNumberUSFormat(respondantVendorContact.value),
+    respondentVendorContact,
+    await lfih.inspectPhoneNumberUSFormat(respondentVendorContact.value),
     ancestors,
   );
 

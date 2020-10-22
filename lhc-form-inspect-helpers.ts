@@ -161,6 +161,30 @@ export function inspectRequiredFormItem<
 
   return item;
 }
+/* Function for validating the Constrained List value 
+ * against a predefined constrainedList Type Array 
+ */
+export function isConstrainedListItemArrayValue<
+  V extends lf.ConstrainedListItemValue[],
+>(
+  o: lf.FormItem,
+  match: lf.ConstrainedListItemValue[],
+): match is V {
+  const value = o.value;
+  if (value && !Array.isArray(value) && typeof value === "object") {
+    // console.dir(match);
+    match.find((v) => {
+      /* Need to validate against the given array of constrainedList
+       * and return validation message if the value does not match any of the 
+       * constrainedList object
+       */
+      if (v.text == value.text || v.code == value.code) {
+        //return the matching validation result
+      }
+    });
+  }
+  return false;
+}
 
 export function isConstrainedListItemSingleValue<
   V extends lf.ConstrainedListItemValue,
