@@ -317,3 +317,36 @@ export async function inspectPhoneNumberUSFormat(
   // no errors found, return untouched
   return target;
 }
+
+export async function getConstrainedListFromExternalLink<T>(
+  url: string,
+): Promise<T> {
+  return fetch(url)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      /* Need to convert the result array to the ConstrainedListItemValue type
+       * Currently the result comes in the below format.
+       * ===============================
+       * [
+            2,
+            [
+              "EmailInviteUser",
+              "EmailInviteOffering"
+            ],
+            null,
+            [
+              [
+                "CRM: Email Invite User"
+              ],
+              [
+                "CRM: Email Invite Offering"
+              ]
+            ]
+          ]
+       * ====================================
+       */
+      return response.json() as Promise<T>;
+    });
+}
