@@ -668,7 +668,7 @@ async function inspectSocialPresence(
   diags.onFormItemInspection(
     opf,
     facebookLink,
-    await lfih.inspectFacebookURL(facebookLink.value),
+    await lfih.inspectOptionalFacebookURL(facebookLink.value),
     ancestors,
   );
   /* Twitter URL, to be verified in Twitter
@@ -678,7 +678,7 @@ async function inspectSocialPresence(
   diags.onFormItemInspection(
     opf,
     twitterLink,
-    await lfih.inspectTwitterURL(twitterLink.value),
+    await lfih.inspectOptionalTwitterURL(twitterLink.value),
     ancestors,
   );
   /* LinkedIn URL, to be verified in LinkedIn
@@ -688,7 +688,7 @@ async function inspectSocialPresence(
   diags.onFormItemInspection(
     opf,
     linkedInLink,
-    await lfih.inspectLinkedInURL(linkedInLink.value),
+    await lfih.inspectOptionalLinkedInURL(linkedInLink.value),
     ancestors,
   );
   /* Instagram URL, to be verified in Instagram
@@ -698,11 +698,13 @@ async function inspectSocialPresence(
   diags.onFormItemInspection(
     opf,
     instagramLink,
-    await lfih.inspectInstagramURL(instagramLink.value),
+    await lfih.inspectOptionalInstagramURL(instagramLink.value),
     ancestors,
   );
-  // we didn't modify the target, we added issues to diagnostics
-  return target;
+
+  return diags.inspectionIssues.length > 0
+    ? insp.mergeDiagsIntoIssue(target, diags)
+    : target;
 }
 
 async function inspectRespondentContactInformation(
@@ -757,8 +759,10 @@ async function inspectRespondentContactInformation(
     await lfih.inspectPhoneNumberUSFormat(respondantVendorContact.value),
     ancestors,
   );
-  // we didn't modify the target, we added issues to diagnostics
-  return target;
+
+  return diags.inspectionIssues.length > 0
+    ? insp.mergeDiagsIntoIssue(target, diags)
+    : target;
 }
 
 /**
