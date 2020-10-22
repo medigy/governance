@@ -184,165 +184,57 @@ export function isConstrainedListItemNotSingleValue<
   return !isConstrainedListItemSingleValue<V>(o, match);
 }
 
-export async function inspectFacebookURL(
-  target: inspText.TextValue | inspText.TextInspectionResult,
-): Promise<
-  | inspText.TextValue
-  | inspText.TextInspectionResult
-  | inspText.TextInspectionIssue
-> {
-  const it: inspText.TextValue = inspText.isTextInspectionResult(target)
-    ? target.inspectionTarget
-    : target;
-  const url = inspText.resolveTextValue(it);
-  if (!url || url.length == 0) {
-    return it;
-  }
-  const siteCollectionDetector = "facebook.com/";
-  if (url.indexOf(siteCollectionDetector) >= 0) {
-    return inspText.textIssue(
-      it,
-      `${url} is not a valid facebook url`,
-    );
-  }
-  try {
-    const urlFetch = await fetch(url);
-    if (urlFetch.status != 200) {
-      return inspText.textIssue(
-        it,
-        `${url} did not return valid status: ${urlFetch.statusText}`,
-      );
-    }
-  } catch (err) {
-    return inspText.textIssue(
-      it,
-      `Exception while trying to fetch ${url}: ${err}`,
-    );
-  }
+export const inspectOptionalFacebookURL = inspText.websiteUrlInspector({
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "facebook.com" }),
+});
 
-  // no errors found, return untouched
-  return target;
-}
+export const inspectRequiredFacebookURL = inspText.websiteUrlInspector({
+  required: (
+    target: inspText.TextValue | inspText.TextInspectionResult,
+  ): inspText.TextInspectionIssue => {
+    return insp.inspectionIssue(target, "Facebook URL Is required");
+  },
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "facebook.com" }),
+});
 
-export async function inspectTwitterURL(
-  target: inspText.TextValue | inspText.TextInspectionResult,
-): Promise<
-  | inspText.TextValue
-  | inspText.TextInspectionResult
-  | inspText.TextInspectionIssue
-> {
-  const it: inspText.TextValue = inspText.isTextInspectionResult(target)
-    ? target.inspectionTarget
-    : target;
-  const url = inspText.resolveTextValue(it);
-  if (!url || url.length == 0) {
-    return it;
-  }
-  const siteCollectionDetector = "twitter.com/";
-  if (url.indexOf(siteCollectionDetector) >= 0) {
-    return inspText.textIssue(
-      it,
-      `${url} is not a valid twitter url`,
-    );
-  }
-  try {
-    const urlFetch = await fetch(url);
-    if (urlFetch.status != 200) {
-      return inspText.textIssue(
-        it,
-        `${url} did not return valid status: ${urlFetch.statusText}`,
-      );
-    }
-  } catch (err) {
-    return inspText.textIssue(
-      it,
-      `Exception while trying to fetch ${url}: ${err}`,
-    );
-  }
+export const inspectOptionalTwitterURL = inspText.websiteUrlInspector({
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "twitter.com" }),
+});
 
-  // no errors found, return untouched
-  return target;
-}
+export const inspectRequiredTwitterURL = inspText.websiteUrlInspector({
+  required: (
+    target: inspText.TextValue | inspText.TextInspectionResult,
+  ): inspText.TextInspectionIssue => {
+    return insp.inspectionIssue(target, "Twitter URL Is required");
+  },
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "twitter.com" }),
+});
 
-export async function inspectLinkedInURL(
-  target: inspText.TextValue | inspText.TextInspectionResult,
-): Promise<
-  | inspText.TextValue
-  | inspText.TextInspectionResult
-  | inspText.TextInspectionIssue
-> {
-  const it: inspText.TextValue = inspText.isTextInspectionResult(target)
-    ? target.inspectionTarget
-    : target;
-  const url = inspText.resolveTextValue(it);
-  if (!url || url.length == 0) {
-    return it;
-  }
-  const siteCollectionDetector = "linkedin.com/";
-  if (url.indexOf(siteCollectionDetector) >= 0) {
-    return inspText.textIssue(
-      it,
-      `${url} is not a valid linkedin url`,
-    );
-  }
-  try {
-    const urlFetch = await fetch(url);
-    if (urlFetch.status != 200) {
-      return inspText.textIssue(
-        it,
-        `${url} did not return valid status: ${urlFetch.statusText}`,
-      );
-    }
-  } catch (err) {
-    return inspText.textIssue(
-      it,
-      `Exception while trying to fetch ${url}: ${err}`,
-    );
-  }
+export const inspectOptionalLinkedInURL = inspText.websiteUrlInspector({
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "linkedin.com" }),
+});
 
-  // no errors found, return untouched
-  return target;
-}
+export const inspectRequiredLinkedInURL = inspText.websiteUrlInspector({
+  required: (
+    target: inspText.TextValue | inspText.TextInspectionResult,
+  ): inspText.TextInspectionIssue => {
+    return insp.inspectionIssue(target, "LinkedIn URL Is required");
+  },
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "linkedin.com" }),
+});
 
-export async function inspectInstagramURL(
-  target: inspText.TextValue | inspText.TextInspectionResult,
-): Promise<
-  | inspText.TextValue
-  | inspText.TextInspectionResult
-  | inspText.TextInspectionIssue
-> {
-  const it: inspText.TextValue = inspText.isTextInspectionResult(target)
-    ? target.inspectionTarget
-    : target;
-  const url = inspText.resolveTextValue(it);
-  if (!url || url.length == 0) {
-    return it;
-  }
-  const siteCollectionDetector = "instagram.com/";
-  if (url.indexOf(siteCollectionDetector) >= 0) {
-    return inspText.textIssue(
-      it,
-      `${url} is not a valid instagram url`,
-    );
-  }
-  try {
-    const urlFetch = await fetch(url);
-    if (urlFetch.status != 200) {
-      return inspText.textIssue(
-        it,
-        `${url} did not return valid status: ${urlFetch.statusText}`,
-      );
-    }
-  } catch (err) {
-    return inspText.textIssue(
-      it,
-      `Exception while trying to fetch ${url}: ${err}`,
-    );
-  }
+export const inspectOptionalInstagramURL = inspText.websiteUrlInspector({
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "instagram.com" }),
+});
 
-  // no errors found, return untouched
-  return target;
-}
+export const inspectRequiredInstagramURL = inspText.websiteUrlInspector({
+  required: (
+    target: inspText.TextValue | inspText.TextInspectionResult,
+  ): inspText.TextInspectionIssue => {
+    return insp.inspectionIssue(target, "Instagram URL Is required");
+  },
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "instagram.com" }),
+});
 
 export async function inspectEmailAddress(
   target: inspText.TextValue | inspText.TextInspectionResult,
