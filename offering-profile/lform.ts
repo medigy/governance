@@ -130,7 +130,10 @@ export type OfferingRespondentSourceItemValue = lf.ConstrainedListItemValue;
  * Need to write function to get the list.
  */
 export const OfferingRespondentSourceContrainedListValues:
-  OfferingRespondentSourceItemValue[] = [];
+  OfferingRespondentSourceItemValue[] = await lfih
+    .getConstrainedListFromExternalLink(
+      "https://proxy.ontology.attest.cloud/api/v1/sourceofinvitation/search",
+    );
 
 export interface RespondentSource extends lf.ConstrainedListItem {
   readonly questionCode: "Q002-10";
@@ -240,7 +243,10 @@ export type OfferingTopicsItemValue = lf.ConstrainedListItemValue;
 /* The Constrained List values should come from the external OWL URL. 
  * Need to write function to get the list.
  */
-export const OfferingTopicsContrainedListValues: OfferingTopicsItemValue[] = [];
+export const OfferingTopicsContrainedListValues: OfferingTopicsItemValue[] =
+  await lfih.getConstrainedListFromExternalLink(
+    "https://proxy.ontology.attest.cloud/api/v1/collection/search",
+  );
 export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-01";
   readonly localQuestionCode: "Q005-01";
@@ -368,11 +374,10 @@ export type OfferingLicenseListItemValue = lf.ConstrainedListItemValue;
  * Need to write function to get the list.
  */
 export const OfferingLicenseContrainedListValues:
-  OfferingLicenseListItemValue[] = [
-    { code: "Commercial", text: "Commercial" },
-    // TODO: @Alan or @Geo add other legitimate values, especially if the item
-    //       is part of an inspection
-  ];
+  OfferingLicenseListItemValue[] = await lfih
+    .getConstrainedListFromExternalLink(
+      "https://proxy.ontology.attest.cloud/api/v1/license/search",
+    );
 export const offeringLicenseCommercial = OfferingLicenseContrainedListValues[0];
 
 export interface OfferingLicense extends lf.ConstrainedListItem {
@@ -590,6 +595,20 @@ export async function inspectProductDetails(
     ancestors,
   );
 
+  /* Validate the Offering Topics selected value
+   * against the Offering Topics Constrained List 
+   */
+  const offeringTopics: OfferingTopics = pd.items[2];
+  diags.onFormItemInspection(
+    opf,
+    offeringTopics,
+    lfih.isConstrainedListItemArrayValue(
+      offeringTopics,
+      OfferingTopicsContrainedListValues,
+    ),
+    ancestors,
+  );
+
   /* Validate the Offering Name against null value */
   const offeringName: OfferingName = pd.items[3];
   diags.onFormItemInspection(
@@ -648,11 +667,18 @@ export async function inspectProductDetails(
   // TODO: @Alan or @Geo please set OfferingLicense.value to specific constrained list
   //       which allows us to check the value; if you cannot figure it out quickly, ask
   //       @Shahid for help.
-  const license: OfferingLicense = pd.items[8];
+
+  /* Validate the Offering License selected value
+   * against the Offering License Constrained List 
+   */
+  const offeringLicense: OfferingLicense = pd.items[8];
   diags.onFormItemInspection(
     opf,
-    license,
-    lfih.inspectRequiredFormItem(opf, license),
+    offeringLicense,
+    lfih.isConstrainedListItemArrayValue(
+      offeringLicense,
+      OfferingLicenseContrainedListValues,
+    ),
     ancestors,
   );
 
@@ -662,7 +688,10 @@ export async function inspectProductDetails(
      */
   const gitRepository: OfferingGitRepository = pd.items[9];
   if (
-    lfih.isConstrainedListItemNotSingleValue(license, offeringLicenseCommercial)
+    lfih.isConstrainedListItemNotSingleValue(
+      offeringLicense,
+      offeringLicenseCommercial,
+    )
   ) {
     diags.onFormItemInspection(
       opf,
@@ -827,6 +856,19 @@ export async function inspectRespondentContactInformation(
     opf,
     respondentVendorContact,
     await lfih.inspectPhoneNumberUSFormat(respondentVendorContact.value),
+    ancestors,
+  );
+  /* Validate the Respondent Source of Invitation selected value
+   * against the Respondent Source of Invitation Constrained List 
+   */
+  const respondentSource: RespondentSource = rci.items[6];
+  diags.onFormItemInspection(
+    opf,
+    respondentSource,
+    lfih.isConstrainedListItemArrayValue(
+      respondentSource,
+      OfferingRespondentSourceContrainedListValues,
+    ),
     ancestors,
   );
 
