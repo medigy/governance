@@ -173,6 +173,7 @@ export function isConstrainedListItemArrayValue<
   const value = o.value;
   if (value && !Array.isArray(value) && typeof value === "object") {
     // console.dir(match);
+    let checkValue: boolean = false;
     match.find((v) => {
       /* Need to validate against the given array of constrainedList
        * and return validation message if the value does not match any of the 
@@ -180,8 +181,12 @@ export function isConstrainedListItemArrayValue<
        */
       if (v.text == value.text || v.code == value.code) {
         //return the matching validation result
+        checkValue = true;
       }
     });
+    if (checkValue == false) {
+      //return validation error
+    }
   }
   return false;
 }
@@ -318,9 +323,9 @@ export async function inspectPhoneNumberUSFormat(
   return target;
 }
 
-export async function getConstrainedListFromExternalLink<T>(
+export async function getConstrainedListFromExternalLink(
   url: string,
-): Promise<T> {
+): Promise<lf.ConstrainedListItemValue[]> {
   return fetch(url)
     .then((response) => {
       if (!response.ok) {
@@ -347,6 +352,16 @@ export async function getConstrainedListFromExternalLink<T>(
           ]
        * ====================================
        */
-      return response.json() as Promise<T>;
+      /* Below is a sample return object
+       */
+      const result = [{
+        "code": "EmailInviteUser",
+        "text": "CRM: Email Invite User",
+      }, {
+        "code": "EmailInviteOffering",
+        "text": "CRM: Email Invite Offering",
+      }];
+      console.dir(response.json());
+      return result as lf.ConstrainedListItemValue[];
     });
 }
