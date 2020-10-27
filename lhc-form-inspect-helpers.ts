@@ -10,6 +10,7 @@ import {
   inspect as insp,
   inspText,
   nihLhcForms as lf,
+  safeHttpClient as shc,
   safety,
 } from "./deps.ts";
 
@@ -164,31 +165,43 @@ export function inspectRequiredFormItem<
 /* Function for validating the Constrained List value 
  * against a predefined constrainedList Type Array 
  */
-export function isConstrainedListItemArrayValue<
+export function inspectConstrainedListItemArrayValue<
   V extends lf.ConstrainedListItemValue[],
+  F extends lf.NihLhcForm = lf.NihLhcForm,
+  I extends lf.FormItem = lf.FormItem,
 >(
-  o: lf.FormItem,
+  o: I,
   match: lf.ConstrainedListItemValue[],
-): match is V {
+  form: F,
+): lf.LhcFormInspectionIssue | I {
   const value = o.value;
+  let checkValue: boolean = false;
+  /* Need to validate against the given array of constrainedList
+   * and return validation message if the value does not match any of the 
+   * constrainedList object
+   */
   if (value && !Array.isArray(value) && typeof value === "object") {
-    // console.dir(match);
-    let checkValue: boolean = false;
     match.find((v) => {
-      /* Need to validate against the given array of constrainedList
-       * and return validation message if the value does not match any of the 
-       * constrainedList object
-       */
-      if (v.text == value.text || v.code == value.code) {
-        //return the matching validation result
+      if (v.text == value.text && v.code == value.code) {
         checkValue = true;
       }
     });
-    if (checkValue == false) {
-      //return validation error
-    }
+  } else if (value && Array.isArray(value) && typeof value === "object") {
+    value.find((x) => {
+      if (typeof x === "object") {
+        match.find((v) => {
+          if (v.text == x.text && v.code == x.code) {
+            checkValue = true;
+          }
+        });
+      }
+    });
   }
-  return false;
+  if (checkValue == false) {
+    //return validation error
+    return lf.lchFormItemIssue(form, o, "Invalid value selected");
+  }
+  return o;
 }
 
 export function isConstrainedListItemSingleValue<
@@ -323,49 +336,96 @@ export async function inspectPhoneNumberUSFormat(
   return target;
 }
 
+export type ApacheJenaResultTexts = ApacheJenaResultText[];
+export type ApacheJenaResultText = string[];
+export type ApacheJenaResultCode = string[];
+export type ApacheJenaResultCount = number;
+export interface ApacheJenaResult {
+  readonly [index: number]:
+    | ApacheJenaResultCount
+    | ApacheJenaResultCode
+    | null
+    | ApacheJenaResultTexts;
+}
+
+export type ApacheJenaResults = ApacheJenaResult[];
+export interface externalResult {
+  text: string;
+  code: string;
+}
+
 export async function getConstrainedListFromExternalLink(
   url: string,
 ): Promise<lf.ConstrainedListItemValue[]> {
-  // SNS: just return an empty set since unit tests are breaking when not commented out
-  // @Geo or @Alan should fix and not commit with unit test failures
-  // be sure to use await, not Promise.then()
-  return [];
-  // return fetch(url)
-  //   .then((response) => {
-  //     if (!response.ok) {
-  //       throw new Error(response.statusText);
-  //     }
-  //     /* Need to convert the result array to the ConstrainedListItemValue type
-  //      * Currently the result comes in the below format.
-  //      * ===============================
-  //      * [
-  //           2,
-  //           [
-  //             "EmailInviteUser",
-  //             "EmailInviteOffering"
-  //           ],
-  //           null,
-  //           [
-  //             [
-  //               "CRM: Email Invite User"
-  //             ],
-  //             [
-  //               "CRM: Email Invite Offering"
-  //             ]
-  //           ]
-  //         ]
-  //      * ====================================
-  //      */
-  //     /* Below is a sample return object
-  //      */
-  //     const result = [{
-  //       "code": "EmailInviteUser",
-  //       "text": "CRM: Email Invite User",
-  //     }, {
-  //       "code": "EmailInviteOffering",
-  //       "text": "CRM: Email Invite Offering",
-  //     }];
-  //     console.dir(response.json());
-  //     return result as lf.ConstrainedListItemValue[];
-  //   });
+  const apacheJenaRes = await shc.safeFetchJSON<ApacheJenaResults>(
+    {
+      request: url,
+    },
+    shc.jsonContentInspector(),
+  );
+  // transform
+  const apacheJenaResultText = apacheJenaRes?.find((v) => {
+    if (v != null) {
+      if (isApacheJenaResultText(v)) {
+        return v;
+      }
+    }
+  });
+  const apacheJenaResultCount = apacheJenaRes?.find((v) => {
+    if (isNumericValue(v)) {
+      return v;
+    }
+  });
+
+  const apacheJenaResultCode = apacheJenaRes?.find((v) => {
+    if (isApacheJenaResultCode(v)) {
+      return v;
+    }
+  });
+  const resultant: {
+    code: number | ApacheJenaResultCode | ApacheJenaResultTexts;
+    text: string;
+  }[] = [];
+  if (
+    typeof apacheJenaResultText === "object" &&
+    typeof apacheJenaResultCode === "object" &&
+    typeof apacheJenaResultCount === "number"
+  ) {
+    for (let index = 0; index < apacheJenaResultCount; index++) {
+      const text = apacheJenaResultText[index]?.toLocaleString();
+      const textCode = apacheJenaResultCode[index];
+      if (text && textCode) {
+        //
+        resultant[index] = {
+          "code": textCode,
+          "text": text,
+        };
+      }
+    }
+  }
+  return resultant as lf.ConstrainedListItemValue[];
+}
+
+export function isApacheJenaResultCode(
+  value: ApacheJenaResult,
+): value is ApacheJenaResultCode[] {
+  switch (typeof value) {
+    case "object":
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+export function isApacheJenaResultText(
+  value: ApacheJenaResult,
+): value is ApacheJenaResultTexts {
+  switch (typeof value[0]) {
+    case "object":
+      return true;
+
+    default:
+      return false;
+  }
 }

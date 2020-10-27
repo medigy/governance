@@ -247,6 +247,8 @@ export const OfferingTopicsContrainedListValues: OfferingTopicsItemValue[] =
   await lfih.getConstrainedListFromExternalLink(
     "https://proxy.ontology.attest.cloud/api/v1/collection/search",
   );
+console.dir("***************");
+// console.dir(OfferingTopicsContrainedListValues);
 export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-01";
   readonly localQuestionCode: "Q005-01";
@@ -574,9 +576,10 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     offeringType,
-    lfih.isConstrainedListItemArrayValue(
+    lfih.inspectConstrainedListItemArrayValue(
       offeringType,
       OfferingTypeConstrainedListValues,
+      opf,
     ),
     ancestors,
   );
@@ -588,9 +591,10 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     offeringOwnerCheck,
-    lfih.isConstrainedListItemArrayValue(
+    lfih.inspectConstrainedListItemArrayValue(
       offeringOwnerCheck,
       OfferingOwnerConstrainedListValues,
+      opf,
     ),
     ancestors,
   );
@@ -599,12 +603,13 @@ export async function inspectProductDetails(
    * against the Offering Topics Constrained List 
    */
   const offeringTopics: OfferingTopics = pd.items[2];
-  diags.onFormItemInspection(
+  await diags.onFormItemInspection(
     opf,
     offeringTopics,
-    lfih.isConstrainedListItemArrayValue(
+    lfih.inspectConstrainedListItemArrayValue(
       offeringTopics,
       OfferingTopicsContrainedListValues,
+      opf,
     ),
     ancestors,
   );
@@ -639,9 +644,10 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     offeringFeaturedProductCheck,
-    lfih.isConstrainedListItemArrayValue(
+    lfih.inspectConstrainedListItemArrayValue(
       offeringFeaturedProductCheck,
       OfferingFeaturedProductConstrainedListValues,
+      opf,
     ),
     ancestors,
   );
@@ -675,9 +681,10 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     offeringLicense,
-    lfih.isConstrainedListItemArrayValue(
+    lfih.inspectConstrainedListItemArrayValue(
       offeringLicense,
       OfferingLicenseContrainedListValues,
+      opf,
     ),
     ancestors,
   );
@@ -865,9 +872,10 @@ export async function inspectRespondentContactInformation(
   diags.onFormItemInspection(
     opf,
     respondentSource,
-    lfih.isConstrainedListItemArrayValue(
+    lfih.inspectConstrainedListItemArrayValue(
       respondentSource,
       OfferingRespondentSourceContrainedListValues,
+      opf,
     ),
     ancestors,
   );
