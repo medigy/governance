@@ -125,13 +125,13 @@ export interface RespondentVendorPhoneNumberCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export type OfferingRespondentSourceItemValue = lf.ConstrainedListItemValue;
+export type offeringRespondentSourceItemValue = lf.ConstrainedListItemValue;
 /* The Constrained List values should come from the external OWL URL. 
  * Need to write function to get the list.
  */
-export const OfferingRespondentSourceContrainedListValues:
-  OfferingRespondentSourceItemValue[] = await lfih
-    .getConstrainedListFromExternalLink(
+export const offeringRespondentSourceContrainedListValues:
+  offeringRespondentSourceItemValue[] = await lfih
+    .getConstrainedListFromMedigyOntologyOWL(
       "https://proxy.ontology.attest.cloud/api/v1/sourceofinvitation/search",
     );
 
@@ -145,7 +145,7 @@ export interface RespondentSource extends lf.ConstrainedListItem {
   readonly codeList: [
     RespondentSourceCodeList,
   ];
-  readonly value: OfferingRespondentSourceItemValue;
+  readonly value: offeringRespondentSourceItemValue;
 }
 
 export interface RespondentSourceCodeList extends lf.FormItem {
@@ -190,8 +190,8 @@ export interface ProductDetails extends lf.FormItem {
   ];
 }
 
-export type OfferingTypeListItemValue = lf.ConstrainedListItemValue;
-export const OfferingTypeConstrainedListValues: OfferingTypeListItemValue[] = [
+export type offeringTypeListItemValue = lf.ConstrainedListItemValue;
+export const offeringTypeConstrainedListValues: offeringTypeListItemValue[] = [
   { code: "0", text: "Product" },
   { code: "1", text: "Solution" },
   { code: "2", text: "Service" },
@@ -206,7 +206,7 @@ export interface OfferingType extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingTypeCodeList,
   ];
-  readonly value: OfferingTypeListItemValue;
+  readonly value: offeringTypeListItemValue;
 }
 
 export interface OfferingTypeCodeList extends lf.FormItem {
@@ -215,9 +215,9 @@ export interface OfferingTypeCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export type OfferingOwnerCheckListItemValue = lf.ConstrainedListItemValue;
-export const OfferingOwnerConstrainedListValues:
-  OfferingOwnerCheckListItemValue[] = [
+export type offeringOwnerCheckListItemValue = lf.ConstrainedListItemValue;
+export const offeringOwnerConstrainedListValues:
+  offeringOwnerCheckListItemValue[] = [
     { code: "Yes", text: "Yes" },
     { code: "No", text: "No" },
   ];
@@ -230,7 +230,7 @@ export interface OfferingOwnerCheck extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingOwnerCheckCodeList,
   ];
-  readonly value: OfferingOwnerCheckListItemValue;
+  readonly value: offeringOwnerCheckListItemValue;
 }
 
 export interface OfferingOwnerCheckCodeList extends lf.FormItem {
@@ -239,15 +239,14 @@ export interface OfferingOwnerCheckCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export type OfferingTopicsItemValue = lf.ConstrainedListItemValue;
+export type offeringTopicsItemValue = lf.ConstrainedListItemValue;
 /* The Constrained List values should come from the external OWL URL. 
  * Need to write function to get the list.
  */
-export const OfferingTopicsContrainedListValues: OfferingTopicsItemValue[] =
-  await lfih.getConstrainedListFromExternalLink(
+export const offeringTopicsContrainedListValues: offeringTopicsItemValue[] =
+  await lfih.getConstrainedListFromMedigyOntologyOWL(
     "https://proxy.ontology.attest.cloud/api/v1/collection/search",
   );
-console.dir("***************");
 // console.dir(OfferingTopicsContrainedListValues);
 export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-01";
@@ -259,7 +258,7 @@ export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingTopicsCodeList,
   ];
-  readonly value: OfferingTopicsItemValue[];
+  readonly value: offeringTopicsItemValue[];
 }
 
 export interface OfferingTopicsCodeList extends lf.FormItem {
@@ -306,10 +305,10 @@ export interface OfferingOneLinerDescriptionCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export type OfferingFeaturedProductCheckListItemValue =
+export type offeringFeaturedProductCheckListItemValue =
   lf.ConstrainedListItemValue;
-export const OfferingFeaturedProductConstrainedListValues:
-  OfferingFeaturedProductCheckListItemValue[] = [
+export const offeringFeaturedProductConstrainedListValues:
+  offeringFeaturedProductCheckListItemValue[] = [
     { code: "0", text: "Yes" },
     { code: "2", text: "No" },
   ];
@@ -324,7 +323,7 @@ export interface OfferingFeaturedProductCheck extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingFeaturedProductCheckCodeList,
   ];
-  readonly value: OfferingFeaturedProductCheckListItemValue;
+  readonly value: offeringFeaturedProductCheckListItemValue;
 }
 
 export interface OfferingFeaturedProductCheckCodeList extends lf.FormItem {
@@ -371,16 +370,16 @@ export interface OfferingWebsiteCodeList extends lf.FormItem {
 }
 
 // TODO: @Alan or @Geo please update this list and all constrained lists
-export type OfferingLicenseListItemValue = lf.ConstrainedListItemValue;
+export type offeringLicenseListItemValue = lf.ConstrainedListItemValue;
 /* The Constrained List values should come from the external OWL URL. 
  * Need to write function to get the list.
  */
-export const OfferingLicenseContrainedListValues:
-  OfferingLicenseListItemValue[] = await lfih
-    .getConstrainedListFromExternalLink(
+export const offeringLicenseContrainedListValues:
+  offeringLicenseListItemValue[] = await lfih
+    .getConstrainedListFromMedigyOntologyOWL(
       "https://proxy.ontology.attest.cloud/api/v1/license/search",
     );
-export const offeringLicenseCommercial = OfferingLicenseContrainedListValues[0];
+export const offeringLicenseCommercial = offeringLicenseContrainedListValues[0];
 
 export interface OfferingLicense extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-22";
@@ -392,7 +391,7 @@ export interface OfferingLicense extends lf.ConstrainedListItem {
   readonly codeList: [
     OfferingLicenseCodeList,
   ];
-  readonly value: OfferingLicenseListItemValue;
+  readonly value: offeringLicenseListItemValue;
 }
 
 export interface OfferingLicenseCodeList extends lf.FormItem {
@@ -578,7 +577,7 @@ export async function inspectProductDetails(
     offeringType,
     lfih.inspectConstrainedListItemArrayValue(
       offeringType,
-      OfferingTypeConstrainedListValues,
+      offeringTypeConstrainedListValues,
       opf,
     ),
     ancestors,
@@ -593,7 +592,7 @@ export async function inspectProductDetails(
     offeringOwnerCheck,
     lfih.inspectConstrainedListItemArrayValue(
       offeringOwnerCheck,
-      OfferingOwnerConstrainedListValues,
+      offeringOwnerConstrainedListValues,
       opf,
     ),
     ancestors,
@@ -608,7 +607,7 @@ export async function inspectProductDetails(
     offeringTopics,
     lfih.inspectConstrainedListItemArrayValue(
       offeringTopics,
-      OfferingTopicsContrainedListValues,
+      offeringTopicsContrainedListValues,
       opf,
     ),
     ancestors,
@@ -646,7 +645,7 @@ export async function inspectProductDetails(
     offeringFeaturedProductCheck,
     lfih.inspectConstrainedListItemArrayValue(
       offeringFeaturedProductCheck,
-      OfferingFeaturedProductConstrainedListValues,
+      offeringFeaturedProductConstrainedListValues,
       opf,
     ),
     ancestors,
@@ -683,7 +682,7 @@ export async function inspectProductDetails(
     offeringLicense,
     lfih.inspectConstrainedListItemArrayValue(
       offeringLicense,
-      OfferingLicenseContrainedListValues,
+      offeringLicenseContrainedListValues,
       opf,
     ),
     ancestors,
@@ -874,7 +873,7 @@ export async function inspectRespondentContactInformation(
     respondentSource,
     lfih.inspectConstrainedListItemArrayValue(
       respondentSource,
-      OfferingRespondentSourceContrainedListValues,
+      offeringRespondentSourceContrainedListValues,
       opf,
     ),
     ancestors,

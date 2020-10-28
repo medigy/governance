@@ -141,6 +141,11 @@ export function inspectRequiredFormItem<
   const isArray = Array.isArray(value);
   // TODO -- @alan or @geo check all the ways fields can miss data
   if (!value) {
+    /* Declared item.value to "" because value is undefined 
+     * and an error comes in the truncate function(287th line) 
+     * called in the coloredLhcFormIssueDiagnosticMessage() in inspect.ts file   
+     */
+    item.value = "";
     return lf.lchFormItemIssue(form, item, "Value required");
   } else if (value == "" || value == null) {
     return lf.lchFormItemIssue(form, item, "Value required");
@@ -198,6 +203,11 @@ export function inspectConstrainedListItemArrayValue<
     });
   }
   if (checkValue == false) {
+    /* Declared o.value to "" because value is undefined 
+     * and an error comes in the truncate function(287th line) 
+     * called in the coloredLhcFormIssueDiagnosticMessage() in inspect.ts file   
+     */
+    o.value = "";
     //return validation error
     return lf.lchFormItemIssue(form, o, "Invalid value selected");
   }
@@ -336,64 +346,69 @@ export async function inspectPhoneNumberUSFormat(
   return target;
 }
 
-export type ApacheJenaResultTexts = ApacheJenaResultText[];
-export type ApacheJenaResultText = string[];
-export type ApacheJenaResultCode = string[];
-export type ApacheJenaResultCount = number;
-export interface ApacheJenaResult {
+export type MedigyOntologyOWLResultTexts = MedigyOntologyOWLResultText[];
+export type MedigyOntologyOWLResultText = string[];
+export type MedigyOntologyOWLResultCode = string[];
+export type MedigyOntologyOWLResultCount = number;
+export interface MedigyOntologyOWLResult {
   readonly [index: number]:
-    | ApacheJenaResultCount
-    | ApacheJenaResultCode
+    | MedigyOntologyOWLResultCount
+    | MedigyOntologyOWLResultCode
     | null
-    | ApacheJenaResultTexts;
+    | MedigyOntologyOWLResultTexts;
 }
 
-export type ApacheJenaResults = ApacheJenaResult[];
+export type MedigyOntologyOWLResults = MedigyOntologyOWLResult[];
 export interface externalResult {
   text: string;
   code: string;
 }
 
-export async function getConstrainedListFromExternalLink(
-  url: string,
+export async function getConstrainedListFromMedigyOntologyOWL(
+  url:
+    | "https://proxy.ontology.attest.cloud/api/v1/license/search"
+    | "https://proxy.ontology.attest.cloud/api/v1/sourceofinvitation/search"
+    | "https://proxy.ontology.attest.cloud/api/v1/collection/search",
 ): Promise<lf.ConstrainedListItemValue[]> {
-  const apacheJenaRes = await shc.safeFetchJSON<ApacheJenaResults>(
+  const medigyOntologyOWLRes = await shc.safeFetchJSON<
+    MedigyOntologyOWLResults
+  >(
     {
       request: url,
     },
     shc.jsonContentInspector(),
   );
   // transform
-  const apacheJenaResultText = apacheJenaRes?.find((v) => {
+  const medigyOntologyOWLResultText = medigyOntologyOWLRes?.find((v) => {
     if (v != null) {
-      if (isApacheJenaResultText(v)) {
+      if (isMedigyOntologyOWLResultText(v)) {
         return v;
       }
     }
   });
-  const apacheJenaResultCount = apacheJenaRes?.find((v) => {
+  const medigyOntologyOWLResultCount = medigyOntologyOWLRes?.find((v) => {
     if (isNumericValue(v)) {
       return v;
     }
   });
 
-  const apacheJenaResultCode = apacheJenaRes?.find((v) => {
-    if (isApacheJenaResultCode(v)) {
+  const medigyOntologyOWLResultCode = medigyOntologyOWLRes?.find((v) => {
+    if (isMedigyOntologyOWLResultCode(v)) {
       return v;
     }
   });
   const resultant: {
-    code: number | ApacheJenaResultCode | ApacheJenaResultTexts;
+    code: number | MedigyOntologyOWLResultCode | MedigyOntologyOWLResultTexts;
     text: string;
   }[] = [];
   if (
-    typeof apacheJenaResultText === "object" &&
-    typeof apacheJenaResultCode === "object" &&
-    typeof apacheJenaResultCount === "number"
+    typeof medigyOntologyOWLResultText === "object" &&
+    typeof medigyOntologyOWLResultCode === "object" &&
+    typeof medigyOntologyOWLResultCount === "number"
   ) {
-    for (let index = 0; index < apacheJenaResultCount; index++) {
-      const text = apacheJenaResultText[index]?.toLocaleString();
-      const textCode = apacheJenaResultCode[index];
+    for (let index = 0; index < medigyOntologyOWLResultCount; index++) {
+      const text = medigyOntologyOWLResultText[index]?.toLocaleString();
+      const textCode = medigyOntologyOWLResultCode[index];
       if (text && textCode) {
         //
         resultant[index] = {
@@ -406,9 +421,9 @@ export async function getConstrainedListFromExternalLink(
   return resultant as lf.ConstrainedListItemValue[];
 }
 
-export function isApacheJenaResultCode(
-  value: ApacheJenaResult,
-): value is ApacheJenaResultCode[] {
+export function isMedigyOntologyOWLResultCode(
+  value: MedigyOntologyOWLResult,
+): value is MedigyOntologyOWLResultCode[] {
   switch (typeof value) {
     case "object":
       return true;
@@ -418,9 +433,9 @@ export function isApacheJenaResultCode(
   }
 }
 
-export function isApacheJenaResultText(
-  value: ApacheJenaResult,
-): value is ApacheJenaResultTexts {
+export function isMedigyOntologyOWLResultText(
+  value: MedigyOntologyOWLResult,
+): value is MedigyOntologyOWLResultTexts {
   switch (typeof value[0]) {
     case "object":
       return true;
