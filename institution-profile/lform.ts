@@ -372,7 +372,7 @@ export async function inspectInstitutionProfile(
   diags.onFormItemInspection(
     opf,
     companyProfile,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       companyProfile,
       companyProfileConstrainedListValues,
       opf,
@@ -384,7 +384,7 @@ export async function inspectInstitutionProfile(
   diags.onFormItemInspection(
     opf,
     jobTitle,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       jobTitle,
       jobTitleConstrainedListValues,
       opf,
@@ -420,7 +420,7 @@ export async function inspectInstitutionProfile(
   diags.onFormItemInspection(
     opf,
     companyType,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       companyType,
       companyTypeConstrainedListValues,
       opf,
@@ -443,28 +443,31 @@ export async function inspectInstitutionProfile(
     lfih.inspectRequiredFormItem(opf, industry),
   );
 
-  /* Validate the Currency for null value */
+  /* Validate the Currency for invalid currency value */
   const currency: Currency = opf.items[8];
   diags.onFormItemInspection(
     opf,
     currency,
-    lfih.inspectRequiredFormItem(opf, currency),
+    lfih.inspectOptionalCurrencyFormItem(opf, currency),
   );
 
-  /* Validate the Company Networth for null value */
-  const netWorth: NetWorth = opf.items[9];
-  diags.onFormItemInspection(
-    opf,
-    netWorth,
-    lfih.inspectRequiredFormItem(opf, netWorth),
-  );
+  /* Commenting the below rule as the 
+   * Networth field is not mandatory.
+   */
+  // /* Validate the Company Networth for null value */
+  // const netWorth: NetWorth = opf.items[9];
+  // diags.onFormItemInspection(
+  //   opf,
+  //   netWorth,
+  //   lfih.inspectRequiredFormItem(opf, netWorth),
+  // );
 
   /* Validate the Company Size */
   const companySize: CompanySize = opf.items[10];
   diags.onFormItemInspection(
     opf,
     companySize,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       companySize,
       companySizeConstrainedListValues,
       opf,
@@ -476,7 +479,7 @@ export async function inspectInstitutionProfile(
   diags.onFormItemInspection(
     opf,
     sourceOfInvitation,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectOptionalConstrainedListItemArrayValue(
       sourceOfInvitation,
       sourceOfInvitationConstrainedListValues,
       opf,
@@ -517,7 +520,7 @@ export async function inspectInstitutionProfile(
   diags.onFormItemInspection(
     opf,
     workPhone,
-    lfih.inspectPhoneNumberUSFormat(workPhone.value),
+    await lfih.inspectRequiredPhoneNumberUSFormat(workPhone.value),
     ancestorsContact,
   );
 
@@ -526,7 +529,7 @@ export async function inspectInstitutionProfile(
   diags.onFormItemInspection(
     opf,
     alternatePhone,
-    lfih.inspectRequiredFormItem(opf, alternatePhone),
+    await lfih.inspectOptionalPhoneNumberUSFormat(alternatePhone.value),
     ancestorsContact,
   );
 
@@ -580,60 +583,62 @@ export async function inspectInstitutionProfile(
 
   const gi: GithubInformation = opf.items[15];
   const ancestorsGit = [gi];
+  /* Commenting the below rules as the 
+   * GITHUB details are not mandatory.
+   */
+  // /* validate the company github username */
+  // const githubUserName: GithubUserName = gi.items[0];
+  // diags.onFormItemInspection(
+  //   opf,
+  //   githubUserName,
+  //   lfih.inspectRequiredFormItem(opf, githubUserName),
+  //   ancestorsGit,
+  // );
 
-  /* validate the company github username */
-  const githubUserName: GithubUserName = gi.items[0];
-  diags.onFormItemInspection(
-    opf,
-    githubUserName,
-    lfih.inspectRequiredFormItem(opf, githubUserName),
-    ancestorsGit,
-  );
+  // /* validate the company github username */
+  // const githubPassword: GithubPassword = gi.items[1];
+  // diags.onFormItemInspection(
+  //   opf,
+  //   githubPassword,
+  //   lfih.inspectRequiredFormItem(opf, githubPassword),
+  //   ancestorsGit,
+  // );
 
-  /* validate the company github username */
-  const githubPassword: GithubPassword = gi.items[1];
-  diags.onFormItemInspection(
-    opf,
-    githubPassword,
-    lfih.inspectRequiredFormItem(opf, githubPassword),
-    ancestorsGit,
-  );
+  // /* validate the company github client Id */
+  // const githubClientId: GithubClientId = gi.items[2];
+  // diags.onFormItemInspection(
+  //   opf,
+  //   githubClientId,
+  //   lfih.inspectRequiredFormItem(opf, githubClientId),
+  //   ancestorsGit,
+  // );
 
-  /* validate the company github client Id */
-  const githubClientId: GithubClientId = gi.items[2];
-  diags.onFormItemInspection(
-    opf,
-    githubClientId,
-    lfih.inspectRequiredFormItem(opf, githubClientId),
-    ancestorsGit,
-  );
+  // /* validate the company github client Secret */
+  // const githubClientSecret: GithubClientSecret = gi.items[3];
+  // diags.onFormItemInspection(
+  //   opf,
+  //   githubClientSecret,
+  //   lfih.inspectRequiredFormItem(opf, githubClientSecret),
+  //   ancestorsGit,
+  // );
 
-  /* validate the company github client Secret */
-  const githubClientSecret: GithubClientSecret = gi.items[3];
-  diags.onFormItemInspection(
-    opf,
-    githubClientSecret,
-    lfih.inspectRequiredFormItem(opf, githubClientSecret),
-    ancestorsGit,
-  );
+  // /* validate the company github client Owner */
+  // const githubOwner: GithubOwner = gi.items[4];
+  // diags.onFormItemInspection(
+  //   opf,
+  //   githubOwner,
+  //   lfih.inspectRequiredFormItem(opf, githubOwner),
+  //   ancestorsGit,
+  // );
 
-  /* validate the company github client Owner */
-  const githubOwner: GithubOwner = gi.items[4];
-  diags.onFormItemInspection(
-    opf,
-    githubOwner,
-    lfih.inspectRequiredFormItem(opf, githubOwner),
-    ancestorsGit,
-  );
-
-  /* validate the company github client Owner */
-  const githubRepo: GithubRepo = gi.items[5];
-  diags.onFormItemInspection(
-    opf,
-    githubRepo,
-    lfih.inspectRequiredFormItem(opf, githubRepo),
-    ancestorsGit,
-  );
+  // /* validate the company github client Owner */
+  // const githubRepo: GithubRepo = gi.items[5];
+  // diags.onFormItemInspection(
+  //   opf,
+  //   githubRepo,
+  //   lfih.inspectRequiredFormItem(opf, githubRepo),
+  //   ancestorsGit,
+  // );
 
   return diags.inspectionIssues.length > 0
     ? insp.mergeDiagsIntoIssue(target, diags)

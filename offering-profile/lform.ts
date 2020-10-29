@@ -575,7 +575,7 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     offeringType,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       offeringType,
       offeringTypeConstrainedListValues,
       opf,
@@ -590,7 +590,7 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     offeringOwnerCheck,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       offeringOwnerCheck,
       offeringOwnerConstrainedListValues,
       opf,
@@ -605,7 +605,7 @@ export async function inspectProductDetails(
   await diags.onFormItemInspection(
     opf,
     offeringTopics,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       offeringTopics,
       offeringTopicsContrainedListValues,
       opf,
@@ -643,7 +643,7 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     offeringFeaturedProductCheck,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       offeringFeaturedProductCheck,
       offeringFeaturedProductConstrainedListValues,
       opf,
@@ -680,7 +680,7 @@ export async function inspectProductDetails(
   diags.onFormItemInspection(
     opf,
     offeringLicense,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       offeringLicense,
       offeringLicenseContrainedListValues,
       opf,
@@ -755,7 +755,7 @@ export async function inspectSocialPresence(
   diags.onFormItemInspection(
     opf,
     facebookLink,
-    await lfih.inspectOptionalFacebookURL(facebookLink.value),
+    await lfih.inspectRequiredFacebookURL(facebookLink.value),
     ancestors,
   );
   /* Twitter URL, to be verified in Twitter
@@ -851,7 +851,9 @@ export async function inspectRespondentContactInformation(
   diags.onFormItemInspection(
     opf,
     respondentContactNumber,
-    await lfih.inspectPhoneNumberUSFormat(respondentContactNumber.value),
+    await lfih.inspectRequiredPhoneNumberUSFormat(
+      respondentContactNumber.value,
+    ),
     ancestors,
   );
   /* Check for US number formatting
@@ -861,7 +863,9 @@ export async function inspectRespondentContactInformation(
   diags.onFormItemInspection(
     opf,
     respondentVendorContact,
-    await lfih.inspectPhoneNumberUSFormat(respondentVendorContact.value),
+    await lfih.inspectRequiredPhoneNumberUSFormat(
+      respondentVendorContact.value,
+    ),
     ancestors,
   );
   /* Validate the Respondent Source of Invitation selected value
@@ -871,7 +875,7 @@ export async function inspectRespondentContactInformation(
   diags.onFormItemInspection(
     opf,
     respondentSource,
-    lfih.inspectConstrainedListItemArrayValue(
+    lfih.inspectRequiredConstrainedListItemArrayValue(
       respondentSource,
       offeringRespondentSourceContrainedListValues,
       opf,

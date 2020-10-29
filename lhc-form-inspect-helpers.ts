@@ -167,10 +167,11 @@ export function inspectRequiredFormItem<
 
   return item;
 }
+
 /* Function for validating the Constrained List value 
  * against a predefined constrainedList Type Array 
  */
-export function inspectConstrainedListItemArrayValue<
+export function inspectRequiredConstrainedListItemArrayValue<
   V extends lf.ConstrainedListItemValue[],
   F extends lf.NihLhcForm = lf.NihLhcForm,
   I extends lf.FormItem = lf.FormItem,
@@ -211,6 +212,26 @@ export function inspectConstrainedListItemArrayValue<
     //return validation error
     return lf.lchFormItemIssue(form, o, "Invalid value selected");
   }
+  return o;
+}
+
+/* Function for validating the Constrained List value 
+ * against a predefined constrainedList Type Array 
+ */
+export function inspectOptionalConstrainedListItemArrayValue<
+  F extends lf.NihLhcForm = lf.NihLhcForm,
+  I extends lf.FormItem = lf.FormItem,
+  M extends lf.ConstrainedListItemValue[] = lf.ConstrainedListItemValue[],
+>(
+  o: I,
+  match: M,
+  form: F,
+): lf.LhcFormInspectionIssue | I {
+  const value = o.value;
+  if (value !== undefined) {
+    return inspectRequiredConstrainedListItemArrayValue(o, match, form);
+  }
+
   return o;
 }
 
@@ -318,7 +339,7 @@ export async function inspectEmailAddress(
   return target;
 }
 
-export async function inspectPhoneNumberUSFormat(
+export async function inspectRequiredPhoneNumberUSFormat(
   target: inspText.TextValue | inspText.TextInspectionResult,
 ): Promise<
   | inspText.TextValue
@@ -329,8 +350,10 @@ export async function inspectPhoneNumberUSFormat(
     ? target.inspectionTarget
     : target;
   const phoneNumber = inspText.resolveTextValue(it);
-  if (!phoneNumber || phoneNumber.length == 0) {
-    return it;
+  if (!phoneNumber || phoneNumber.length == 0 || phoneNumber == "") {
+    return insp.inspectionIssue(target, "Phone Number is required");
+  } else if (phoneNumber.length < 10) {
+    return insp.inspectionIssue(target, "Phone Number is not valid");
   }
   /* Check if the phone number formatting is US */
   try {
@@ -344,6 +367,56 @@ export async function inspectPhoneNumberUSFormat(
 
   // no errors found, return untouched
   return target;
+}
+
+export async function inspectOptionalPhoneNumberUSFormat(
+  target: inspText.TextValue | inspText.TextInspectionResult | undefined,
+): Promise<
+  | inspText.TextValue
+  | inspText.TextInspectionResult
+  | inspText.TextInspectionIssue
+> {
+  if (target !== undefined && target !== "") {
+    const result = await inspectRequiredPhoneNumberUSFormat(target);
+    return result;
+  } else {
+    return "";
+  }
+}
+
+/* Inspect rule for a mandatory valid Currency Input  */
+export function inspectRequiredCurrencyFormItem<
+  F extends lf.NihLhcForm = lf.NihLhcForm,
+  I extends lf.FormItem = lf.FormItem,
+>(
+  form: F,
+  item: I,
+): lf.LhcFormInspectionIssue | I {
+  const value = item.value;
+  if (value !== undefined && value != "") {
+    /* Check the value for valid currency and 
+     * return the result
+     */
+  } else {
+    item.value = "";
+    return lf.lchFormItemIssue(form, item, "Currency required");
+  }
+  return item;
+}
+
+/* Inspect rule for an optional valid Currency Input  */
+export function inspectOptionalCurrencyFormItem<
+  F extends lf.NihLhcForm = lf.NihLhcForm,
+  I extends lf.FormItem = lf.FormItem,
+>(
+  form: F,
+  item: I,
+): lf.LhcFormInspectionIssue | I {
+  const value = item.value;
+  if (value !== undefined && value != "") {
+    return inspectRequiredCurrencyFormItem(form, item);
+  }
+  return item;
 }
 
 export type MedigyOntologyOWLResultTexts = MedigyOntologyOWLResultText[];
