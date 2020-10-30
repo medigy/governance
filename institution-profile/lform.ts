@@ -511,7 +511,7 @@ export async function inspectInstitutionProfile(
   diags.onFormItemInspection(
     opf,
     workEmail,
-    lfih.inspectEmailAddress(workEmail.value),
+    lfih.inspectRequiredEmailAddress(workEmail.value),
     ancestorsContact,
   );
 
@@ -568,7 +568,7 @@ export async function inspectInstitutionProfile(
   diags.onFormItemInspection(
     opf,
     zipOrPostal,
-    lfih.inspectRequiredFormItem(opf, zipOrPostal),
+    lfih.inspectRequiredZipCodeFormItem(opf, zipOrPostal),
     ancestorsAddress,
   );
 

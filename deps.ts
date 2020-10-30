@@ -4,7 +4,7 @@
 
 export * as fs from "https://deno.land/std@0.75.0/fs/mod.ts";
 export * as path from "https://deno.land/std@0.75.0/path/mod.ts";
-export * as docopt from "https://denopkg.com/Eyal-Shalev/docopt.js@v1.0.1/src/docopt.ts";
+export * as docopt from "https://denopkg.com/Eyal-Shalev/docopt.js@v1.0.4/src/docopt.ts";
 export * as governedInstr from "https://denopkg.com/gov-suite/governed-instrument@v0.7.7/core/mod.ts";
 export * as govnDataCLI from "https://denopkg.com/gov-suite/governed-structured-data@v0.7.1/cli.ts";
 export * as govnData from "https://denopkg.com/gov-suite/governed-structured-data@v0.7.1/mod.ts";

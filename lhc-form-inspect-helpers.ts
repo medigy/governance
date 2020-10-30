@@ -239,11 +239,13 @@ export function isConstrainedListItemSingleValue<
   V extends lf.ConstrainedListItemValue,
 >(
   o: lf.FormItem,
-  match: lf.ConstrainedListItemValue,
+  match: lf.ConstrainedListItemValue | undefined,
 ): match is V {
   const value = o.value;
   if (value && !Array.isArray(value) && typeof value === "object") {
-    return match.code == value.code;
+    if (match !== undefined) {
+      return match.code == value.code;
+    }
   }
   return false;
 }
@@ -252,10 +254,23 @@ export function isConstrainedListItemNotSingleValue<
   V extends lf.ConstrainedListItemValue,
 >(
   o: lf.FormItem,
-  match: lf.ConstrainedListItemValue,
+  match: lf.ConstrainedListItemValue | undefined,
 ): match is V {
-  return !isConstrainedListItemSingleValue<V>(o, match);
+  return isConstrainedListItemSingleValue<V>(o, match);
 }
+
+export const inspectOptionalGithubURL = inspText.websiteUrlInspector({
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "github.com" }),
+});
+
+export const inspectRequiredGithubURL = inspText.websiteUrlInspector({
+  required: (
+    target: inspText.TextValue | inspText.TextInspectionResult,
+  ): inspText.TextInspectionIssue => {
+    return insp.inspectionIssue(target, "Github URL Is required");
+  },
+  urlPattern: inspText.urlFormatInspector({ domainPattern: "github.com" }),
+});
 
 export const inspectOptionalFacebookURL = inspText.websiteUrlInspector({
   urlPattern: inspText.urlFormatInspector({ domainPattern: "facebook.com" }),
@@ -309,7 +324,7 @@ export const inspectRequiredInstagramURL = inspText.websiteUrlInspector({
   urlPattern: inspText.urlFormatInspector({ domainPattern: "instagram.com" }),
 });
 
-export async function inspectEmailAddress(
+export async function inspectRequiredEmailAddress(
   target: inspText.TextValue | inspText.TextInspectionResult,
 ): Promise<
   | inspText.TextValue
@@ -320,8 +335,12 @@ export async function inspectEmailAddress(
     ? target.inspectionTarget
     : target;
   const email = inspText.resolveTextValue(it);
+  const emailPattern =
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!email || email.length == 0) {
-    return it;
+    return insp.inspectionIssue(target, "Email is required");
+  } else if (!emailPattern.test(email)) {
+    return insp.inspectionIssue(target, "Email is not valid");
   }
   /* Check if the email is valid using 
    * tools like https://email-checker.net 
@@ -337,6 +356,21 @@ export async function inspectEmailAddress(
 
   // no errors found, return untouched
   return target;
+}
+
+export async function inspectOptionalEmailAddress(
+  target: inspText.TextValue | inspText.TextInspectionResult,
+): Promise<
+  | inspText.TextValue
+  | inspText.TextInspectionResult
+  | inspText.TextInspectionIssue
+> {
+  if (target !== undefined && target !== "") {
+    const result = await inspectRequiredEmailAddress(target);
+    return result;
+  } else {
+    return "";
+  }
 }
 
 export async function inspectRequiredPhoneNumberUSFormat(
@@ -357,7 +391,11 @@ export async function inspectRequiredPhoneNumberUSFormat(
   }
   /* Check if the phone number formatting is US */
   try {
-    /* Check if phone number exists */
+    const phoneNumberFormatUS =
+      /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+    if (!phoneNumber.match(phoneNumberFormatUS)) {
+      return insp.inspectionIssue(target, "Phone Number is not valid");
+    }
   } catch (err) {
     return inspText.textIssue(
       it,
@@ -394,9 +432,19 @@ export function inspectRequiredCurrencyFormItem<
 ): lf.LhcFormInspectionIssue | I {
   const value = item.value;
   if (value !== undefined && value != "") {
-    /* Check the value for valid currency and 
-     * return the result
+    /* Check the value for valid currency and return the result
+     * For the time being we are checking this against "Dollar", "Dollars", "USD", "US Dollar"
      */
+    if (
+      value !== "Dollar" && value !== "Dollars" && value !== "USD" &&
+      value !== "US Dollar"
+    ) {
+      return lf.lchFormItemIssue(
+        form,
+        item,
+        "Invalid Currency (Expecting 'Dollar','Dollars' or 'USD')",
+      );
+    }
   } else {
     item.value = "";
     return lf.lchFormItemIssue(form, item, "Currency required");
@@ -415,6 +463,49 @@ export function inspectOptionalCurrencyFormItem<
   const value = item.value;
   if (value !== undefined && value != "") {
     return inspectRequiredCurrencyFormItem(form, item);
+  }
+  return item;
+}
+
+/* Inspect rule for a mandatory valid Zipcode Input  */
+export function inspectRequiredZipCodeFormItem<
+  F extends lf.NihLhcForm = lf.NihLhcForm,
+  I extends lf.FormItem = lf.FormItem,
+>(
+  form: F,
+  item: I,
+): lf.LhcFormInspectionIssue | I {
+  const value = item.value;
+  if (value !== undefined && value != "" && typeof value === "string") {
+    /* Check the value for valid zipcode and return the result
+     * For the time being we are checking this against US Zipcodes
+     */
+    const zipCodePattern = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
+    if (!zipCodePattern.test(value)) {
+      return lf.lchFormItemIssue(
+        form,
+        item,
+        "Invalid Zip Code",
+      );
+    }
+  } else {
+    item.value = "";
+    return lf.lchFormItemIssue(form, item, "Zip/Postal Code required");
+  }
+  return item;
+}
+
+/* Inspect rule for an optional valid Zip code Input  */
+export function inspectOptionalZipCodeFormItem<
+  F extends lf.NihLhcForm = lf.NihLhcForm,
+  I extends lf.FormItem = lf.FormItem,
+>(
+  form: F,
+  item: I,
+): lf.LhcFormInspectionIssue | I {
+  const value = item.value;
+  if (value !== undefined && value != "") {
+    return inspectRequiredZipCodeFormItem(form, item);
   }
   return item;
 }

@@ -379,8 +379,14 @@ export const offeringLicenseContrainedListValues:
     .getConstrainedListFromMedigyOntologyOWL(
       "https://proxy.ontology.attest.cloud/api/v1/license/search",
     );
-export const offeringLicenseCommercial = offeringLicenseContrainedListValues[0];
-
+export const offeringLicenseCommercial = offeringLicenseContrainedListValues
+  ?.find((l) => {
+    if (lfih.isConstrainedValue(l)) {
+      if (l.code == "Commercial") {
+        return l;
+      }
+    }
+  });
 export interface OfferingLicense extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-22";
   readonly localQuestionCode: "Q005-22";
@@ -693,6 +699,10 @@ export async function inspectProductDetails(
      * Validate with reference source site
      */
   const gitRepository: OfferingGitRepository = pd.items[9];
+  console.dir(lfih.isConstrainedListItemNotSingleValue(
+    offeringLicense,
+    offeringLicenseCommercial,
+  ));
   if (
     lfih.isConstrainedListItemNotSingleValue(
       offeringLicense,
@@ -702,7 +712,14 @@ export async function inspectProductDetails(
     diags.onFormItemInspection(
       opf,
       gitRepository,
-      await inspText.inspectWebsiteURL(gitRepository.value),
+      await lfih.inspectRequiredGithubURL(gitRepository.value),
+      ancestors,
+    );
+  } else {
+    diags.onFormItemInspection(
+      opf,
+      gitRepository,
+      await lfih.inspectOptionalGithubURL(gitRepository.value),
       ancestors,
     );
   }
@@ -755,7 +772,7 @@ export async function inspectSocialPresence(
   diags.onFormItemInspection(
     opf,
     facebookLink,
-    await lfih.inspectRequiredFacebookURL(facebookLink.value),
+    await lfih.inspectOptionalFacebookURL(facebookLink.value),
     ancestors,
   );
   /* Twitter URL, to be verified in Twitter
@@ -833,7 +850,7 @@ export async function inspectRespondentContactInformation(
   diags.onFormItemInspection(
     opf,
     respondentEmail,
-    await lfih.inspectEmailAddress(respondentEmail.value),
+    await lfih.inspectRequiredEmailAddress(respondentEmail.value),
     ancestors,
   );
   // Check for the email verification using tools like https://email-checker.net
@@ -841,7 +858,7 @@ export async function inspectRespondentContactInformation(
   diags.onFormItemInspection(
     opf,
     respondentVendorEmail,
-    await lfih.inspectEmailAddress(respondentVendorEmail.value),
+    await lfih.inspectOptionalEmailAddress(respondentVendorEmail.value),
     ancestors,
   );
   /* Check for US number formatting
@@ -863,7 +880,7 @@ export async function inspectRespondentContactInformation(
   diags.onFormItemInspection(
     opf,
     respondentVendorContact,
-    await lfih.inspectRequiredPhoneNumberUSFormat(
+    await lfih.inspectOptionalPhoneNumberUSFormat(
       respondentVendorContact.value,
     ),
     ancestors,
