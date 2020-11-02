@@ -1,4 +1,11 @@
-import { docopt, govnData as gd, govnDataCLI as gdctl, path } from "./deps.ts";
+import {
+  docopt,
+  govnData as gd,
+  govnDataCLI as gdctl,
+  httpServer as http,
+  nihLhcForms as lf,
+  path,
+} from "./deps.ts";
 import * as mod from "./mod.ts";
 
 const $VERSION = gdctl.determineVersion(import.meta.url, import.meta.main);
@@ -6,7 +13,9 @@ const docoptSpec = `
 Medigy Governance Controller ${$VERSION}.
 
 Usage:
+  mgctl server [--port=<port>] [--verbose]
   mgctl offering-profile type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
+  mgctl offering-profile inspect lform <lform-json-src>
   mgctl institution-profile type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
   mgctl quant-eval type lform <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose] [--gd-mod-ref=<path>] [--gd-mod-deps=<deps.ts>]
   mgctl quant-eval type facet <lform-json-src> [--validate] [--mg-mod-ref=<path>] [--mg-mod-deps=<deps.ts>] [--dry-run] [--overwrite] [--verbose]
@@ -17,7 +26,7 @@ Usage:
 Options:
   -h --help                   Show this screen
   --version                   Show version
-  <lform-json-src>            LHC Form JSON source(s) glob (like "**/*.lhc-form.json")
+  <lform-json-src>            LHC Form JSON source(s) glob (like "**/*.lhc-form.json") or "-" for STDIN
   <start-path>                Starting path to search for LHC Form JSON sources
   --validate                  Check the generated TypeScript file(s)
   --mg-mod-ref=<path>         Absolute or relative path of the Medigy Governance *.mod.ts to use
@@ -114,6 +123,63 @@ export async function typeLhcFormJSON(
   });
 }
 
+export async function inspectLhcFormJSON<F extends lf.NihLhcForm>(
+  ctx: gd.CliCmdHandlerContext,
+  inspector: {
+    inspect: (f: F) => Promise<lf.LhcFormInspectionDiagnostics<F>>;
+    inspectionDiagnosticsJSON?: (
+      diags: lf.LhcFormInspectionDiagnostics<F>,
+    ) => string;
+  },
+): Promise<void> {
+  const { "<lform-json-src>": lformJsonSpec } = ctx.cliOptions;
+  if (lformJsonSpec == "-") {
+    const supplier = new gd.BufferSupplier(
+      Deno.readAllSync(Deno.stdin),
+      gd.defaultBufferSupplierOptions("STDIN"),
+    );
+    supplier.forEach({
+      onEntry: async (
+        ctx: gd.UntypedDataSupplierEntryContext,
+      ): Promise<void> => {
+        if (gd.isJsonSupplierEntryContext(ctx)) {
+          // TODO: should we "type" this first and not just cast it?
+          const lform: F = ctx.jsonValue as F;
+          const diags = await inspector.inspect(lform);
+          console.log(
+            inspector.inspectionDiagnosticsJSON
+              ? inspector.inspectionDiagnosticsJSON(diags)
+              : JSON.stringify(diags, undefined, 2),
+          );
+        }
+      },
+    });
+  } else {
+    const supplier = new gd.FileSystemGlobSupplier(
+      lformJsonSpec?.toString() || "**/*.json",
+    );
+    supplier.forEach({
+      onEntry: async (
+        ctx: gd.UntypedDataSupplierEntryContext,
+      ): Promise<void> => {
+        if (
+          gd.isJsonSupplierEntryContext(ctx) && gd.isGlobWalkEntryContext(ctx)
+        ) {
+          // TODO: should we "type" this first and not just cast it?
+          const lform: F = ctx.jsonValue as F;
+          const diags = await inspector.inspect(lform);
+          Deno.writeTextFileSync(
+            `${ctx.fileNameWithoutExtn}.inspection-log.json`,
+            inspector.inspectionDiagnosticsJSON
+              ? inspector.inspectionDiagnosticsJSON(diags)
+              : JSON.stringify(diags, undefined, 2),
+          );
+        }
+      },
+    });
+  }
+}
+
 export async function offeringProfileLhcFormJsonTyperCliHandler(
   ctx: gd.CliCmdHandlerContext,
 ): Promise<true | void> {
@@ -130,6 +196,24 @@ export async function offeringProfileLhcFormJsonTyperCliHandler(
         ...govnDataModuleImportDirective(ctx.cliOptions),
         ...medigyGovnModuleRef(ctx.cliOptions),
       }),
+    );
+    return true;
+  }
+}
+
+export async function offeringProfileLhcFormInspectCliHandler(
+  ctx: gd.CliCmdHandlerContext,
+): Promise<true | void> {
+  const {
+    "offering-profile": offeringProfile,
+    "inspect": inspect,
+    "lform": lform,
+    "<lform-json-src>": lformJsonSpec,
+  } = ctx.cliOptions;
+  if (offeringProfile && inspect && lform && lformJsonSpec) {
+    inspectLhcFormJSON<mod.offerProfile.lf.OfferingProfileLhcForm>(
+      ctx,
+      new mod.offerProfile.lf.OfferingProfileValidator(),
     );
     return true;
   }
@@ -239,15 +323,60 @@ export async function quantEvalCampaignsTyperCliHandler(
   }
 }
 
+export async function httpServiceHandler(
+  ctx: gd.CliCmdHandlerContext,
+): Promise<true | void> {
+  const {
+    "server": server,
+    "--port": portSpec,
+  } = ctx.cliOptions;
+  if (server) {
+    const port = typeof portSpec === "number" ? portSpec : 8159;
+    const baseURL = `http://localhost:${port}`;
+    const verbose = ctx.isVerbose;
+    const s = http.serve({ port: port });
+    if (verbose) {
+      console.log(`Medigy Governance service running at ${baseURL}`);
+    }
+    for await (const req of s) {
+      const url = new URL(req.url, baseURL);
+      if (verbose) console.log(req.method, url.pathname);
+      // try with curl -H "Content-Type: application/json" --data @offering-profile.lhc-form.json http://localhost:8159/offering-profile/inspect/lform | jq
+      if (url.pathname.startsWith("/offering-profile/inspect/lform")) {
+        try {
+          const content = JSON.parse(
+            new TextDecoder().decode(await Deno.readAll(req.body)),
+          );
+          const lform = content as mod.offerProfile.lf.OfferingProfileLhcForm;
+          const inspector = new mod.offerProfile.lf.OfferingProfileValidator();
+          const diags = await inspector.inspect(lform);
+          req.respond(
+            {
+              body: inspector.inspectionDiagnosticsJSON
+                ? inspector.inspectionDiagnosticsJSON(diags)
+                : JSON.stringify(diags, undefined, 2),
+            },
+          );
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+    return true;
+  }
+}
+
 if (import.meta.main) {
   gdctl.CLI<gd.CliCmdHandlerContext>(
     docoptSpec,
     [
       offeringProfileLhcFormJsonTyperCliHandler,
+      offeringProfileLhcFormInspectCliHandler,
       institutionProfileLhcFormJsonTyperCliHandler,
       quantEvalFacetLhcFormJsonTyperCliHandler,
       quantEvalFacetTyperCliHandler,
       quantEvalCampaignsTyperCliHandler,
+      httpServiceHandler,
     ],
     (options: docopt.DocOptions): gd.CliCmdHandlerContext => {
       return new gd.CliCmdHandlerContext(

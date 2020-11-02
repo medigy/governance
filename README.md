@@ -30,7 +30,25 @@ mgctl --help
 mgctl --version
 ```
 
-# Usage
+# HTTP Service Usage
+
+## Engineering Sandbox-based development/testing usage
+
+Start the server:
+
+```bash
+cd $HOME/workspaces/github.com/medigy/governance
+deno-run mgctl.ts server --verbose
+```
+
+In a separate window, try the service:
+
+```bash
+cd $HOME/workspaces/gl.infra.medigy.com/institutions/innovators/netspective-communications/unblock-health
+curl -H "Content-Type: application/json" --data @offering-profile.lhc-form.json http://localhost:8159/offering-profile/inspect/lform
+```
+
+# CLI Usage
 
 Use the following instructions to take an LHC Form JSON file and "type" it as a Medigy Offering Profile. Once "typed" an LHC Form may be validated by the TypeScript compiler a a normal TypeScript file or transpiled to JavaScript.
 

@@ -247,7 +247,7 @@ export const offeringTopicsContrainedListValues: offeringTopicsItemValue[] =
   await lfih.getConstrainedListFromMedigyOntologyOWL(
     "https://proxy.ontology.attest.cloud/api/v1/collection/search",
   );
-// console.dir(OfferingTopicsContrainedListValues);
+
 export interface OfferingTopics extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-01";
   readonly localQuestionCode: "Q005-01";
@@ -699,10 +699,10 @@ export async function inspectProductDetails(
      * Validate with reference source site
      */
   const gitRepository: OfferingGitRepository = pd.items[9];
-  console.dir(lfih.isConstrainedListItemNotSingleValue(
+  lfih.isConstrainedListItemNotSingleValue(
     offeringLicense,
     offeringLicenseCommercial,
-  ));
+  );
   if (
     lfih.isConstrainedListItemNotSingleValue(
       offeringLicense,
@@ -918,6 +918,19 @@ export class OfferingProfileValidator {
     inspectSocialPresence,
     inspectRespondentContactInformation,
   ];
+
+  inspectionDiagnosticsJSON(
+    diags: lf.LhcFormInspectionDiagnostics<OfferingProfileLhcForm>,
+  ): string {
+    // deno-lint-ignore no-explicit-any
+    return JSON.stringify(diags, (key: string, value: any): any => {
+      // don't pass the inspectionTarget or ancestors into output logs
+      if (["inspectionTarget", "ancestors"].find((k) => k == key)) {
+        return undefined;
+      }
+      return value;
+    }, 2);
+  }
 
   async inspect(
     opf: OfferingProfileLhcForm,

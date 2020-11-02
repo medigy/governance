@@ -4,10 +4,13 @@
 
 export * as fs from "https://deno.land/std@0.75.0/fs/mod.ts";
 export * as path from "https://deno.land/std@0.75.0/path/mod.ts";
+export * as httpServer from "https://deno.land/std@0.75.0/http/server.ts";
 export * as docopt from "https://denopkg.com/Eyal-Shalev/docopt.js@v1.0.4/src/docopt.ts";
 export * as governedInstr from "https://denopkg.com/gov-suite/governed-instrument@v0.7.7/core/mod.ts";
-export * as govnDataCLI from "https://denopkg.com/gov-suite/governed-structured-data@v0.7.1/cli.ts";
-export * as govnData from "https://denopkg.com/gov-suite/governed-structured-data@v0.7.1/mod.ts";
+export * as govnDataCLI from "https://denopkg.com/gov-suite/governed-structured-data@v0.7.3/cli.ts";
+export * as govnData from "https://denopkg.com/gov-suite/governed-structured-data@v0.7.3/mod.ts";
+// export * as govnDataCLI from "../../gov-suite/governed-structured-data/cli.ts";
+// export * as govnData from "../../gov-suite/governed-structured-data/mod.ts";
 export * as serializeJS from "https://denopkg.com/shah/javascript-stringify@v2.0.4/src/index.ts";
 export * as serializeJsStringify from "https://denopkg.com/shah/javascript-stringify@v2.0.4/src/stringify.ts";
 export * as serializeJsTypes from "https://denopkg.com/shah/javascript-stringify@v2.0.4/src/types.ts";

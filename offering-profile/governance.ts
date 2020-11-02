@@ -10,21 +10,25 @@ export interface OfferingProfileConstructionContext
 export interface OfferingProfileConstructor {
   new (ctx: OfferingProfileConstructionContext): OfferingProfile;
 }
+
 export enum OfferingStatus {
   APPROVED = "Approved",
   PENDING = "Pending",
   ARCHIVED = "Archived",
 }
+
 export enum OfferingType {
   PRODUCT = "Product",
   SOLUTION = "Solution",
   SERVICE = "Service",
 }
+
 export enum OfferingState {
   CLOSED = "closed",
   OPENED = "opened",
   REOPENED = "reopened",
 }
+
 export type OfferingOwner = "Yes" | "No";
 export type OpensourceProduct = "Yes" | "No";
 export interface Categories {
