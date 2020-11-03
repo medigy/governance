@@ -173,7 +173,7 @@ export interface RespondentContactInformation extends lf.FormItem {
 export interface ProductDetails extends lf.FormItem {
   readonly header: true;
   readonly questionCode: "Q005";
-  readonly question: "Product Details";
+  readonly question: "Offering Details";
   readonly items: [
     OfferingType,
     OfferingOwnerCheck,
@@ -289,7 +289,7 @@ export interface OfferingOneLinerDescription
   extends lf.UniqueMultiLineTextItem {
   readonly questionCode: "Q005-11";
   readonly localQuestionCode: "Q005-11";
-  readonly question: "A one liner describing the offering";
+  readonly question: "A one liner describing the offering*";
   readonly linkId: "/Q005/Q005-11";
   readonly codingInstructions:
     "Short description of the offering. Use 10 to 15 words without any spelling/grammar errors. Pass the text through Grammarly";
@@ -350,10 +350,10 @@ export interface OfferingCreatedDateCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface OfferingWebsite extends lf.UniqueTextItem {
+export interface OfferingWebsite extends lf.UniqueURLItem {
   readonly questionCode: "Q005-03";
-  readonly localQuestionCode: "Q005-02";
-  readonly question: "Website of the offering";
+  readonly localQuestionCode: "Q005-03";
+  readonly question: "Website of the offering*";
   readonly linkId: "/Q005/Q005-03";
   readonly codingInstructions:
     "URL of the offering, where information related to this offering is mentioned";
@@ -390,7 +390,7 @@ export const offeringLicenseCommercial = offeringLicenseContrainedListValues
 export interface OfferingLicense extends lf.ConstrainedListItem {
   readonly questionCode: "Q005-22";
   readonly localQuestionCode: "Q005-22";
-  readonly question: "License Of The Offering";
+  readonly question: "License Of The Offering*";
   readonly linkId: "/Q005/Q005-22";
   readonly codingInstructions:
     "Opensource type, Commercial, None of the above - Choose from the list";
@@ -406,7 +406,7 @@ export interface OfferingLicenseCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface OfferingGitRepository extends lf.UniqueTextItem {
+export interface OfferingGitRepository extends lf.UniqueURLItem {
   readonly questionCode: "Q005-06";
   readonly localQuestionCode: "Q005-06";
   readonly question: "GIT repository link of the offering";
@@ -416,7 +416,7 @@ export interface OfferingGitRepository extends lf.UniqueTextItem {
   readonly codeList: [
     OfferingGitRepositoryCodeList,
   ];
-  readonly value: string;
+  readonly value?: string;
 }
 
 export interface OfferingGitRepositoryCodeList extends lf.FormItem {
@@ -429,7 +429,7 @@ export interface OfferingDescription extends lf.UniqueMultiLineTextItem {
   readonly questionCode: "Q005-07";
   readonly localQuestionCode: "Q005-07";
   readonly question:
-    "Describe the key benefits and unique value proposition of the offering";
+    "Describe the key benefits and unique value proposition of the offering*";
   readonly linkId: "/Q005/Q005-07";
   readonly codingInstructions:
     "The offering description, TM, R to be checked - Maximum 45 to 50 words without any spelling/grammar error. Run the text through Grammarly";
@@ -449,7 +449,7 @@ export interface OfferingDescriptionCodeList extends lf.FormItem {
 export interface OfferingPermaLink extends lf.UniqueTextItem {
   readonly questionCode: "Q005-10";
   readonly localQuestionCode: "Q005-10";
-  readonly question: "Permalink";
+  readonly question: "Permalink*";
   readonly linkId: "/Q005/Q005-10";
   readonly codingInstructions:
     "Related to Offering name. If the data is blank, create permalink by replacing spaces with a hyphen and use only small letters (E.g., citus-health)";
@@ -477,7 +477,7 @@ export interface SocialPresence extends lf.FormItem {
   ];
 }
 
-export interface SocialPresenceFacebookLink extends lf.UniqueTextItem {
+export interface SocialPresenceFacebookLink extends lf.UniqueURLItem {
   readonly questionCode: "Q006-01";
   readonly localQuestionCode: "Q006-01";
   readonly question: "Facebook page of the offering";
@@ -486,7 +486,7 @@ export interface SocialPresenceFacebookLink extends lf.UniqueTextItem {
   readonly codeList: [
     SocialPresenceFacebookLinkCodeList,
   ];
-  readonly value: string;
+  readonly value?: string;
 }
 
 export interface SocialPresenceFacebookLinkCodeList extends lf.FormItem {
@@ -495,7 +495,7 @@ export interface SocialPresenceFacebookLinkCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface SocialPresenceTwitterLink extends lf.UniqueTextItem {
+export interface SocialPresenceTwitterLink extends lf.UniqueURLItem {
   readonly questionCode: "Q006-02";
   readonly localQuestionCode: "Q006-02";
   readonly question: "Twitter page of the offering";
@@ -504,7 +504,7 @@ export interface SocialPresenceTwitterLink extends lf.UniqueTextItem {
   readonly codeList: [
     SocialPresenceTwitterLinkCodeList,
   ];
-  readonly value: string;
+  readonly value?: string;
 }
 
 export interface SocialPresenceTwitterLinkCodeList extends lf.FormItem {
@@ -513,7 +513,7 @@ export interface SocialPresenceTwitterLinkCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface SocialPresenceLinkedInLink extends lf.UniqueTextItem {
+export interface SocialPresenceLinkedInLink extends lf.UniqueURLItem {
   readonly questionCode: "Q006-03";
   readonly localQuestionCode: "Q006-03";
   readonly question: "LinkedIn page of the offering";
@@ -522,7 +522,7 @@ export interface SocialPresenceLinkedInLink extends lf.UniqueTextItem {
   readonly codeList: [
     SocialPresenceLinkedInLinkCodeList,
   ];
-  readonly value: string;
+  readonly value?: string;
 }
 
 export interface SocialPresenceLinkedInLinkCodeList extends lf.FormItem {
@@ -531,7 +531,7 @@ export interface SocialPresenceLinkedInLinkCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface SocialPresenceInstagramLink extends lf.UniqueTextItem {
+export interface SocialPresenceInstagramLink extends lf.UniqueURLItem {
   readonly questionCode: "Q006-04";
   readonly localQuestionCode: "Q006-04";
   readonly question: "Instagram page of the offering";
@@ -540,7 +540,7 @@ export interface SocialPresenceInstagramLink extends lf.UniqueTextItem {
   readonly codeList: [
     SocialPresenceInstagramLinkCodeList,
   ];
-  readonly value: string;
+  readonly value?: string;
 }
 
 export interface SocialPresenceInstagramLinkCodeList extends lf.FormItem {
@@ -550,7 +550,7 @@ export interface SocialPresenceInstagramLinkCodeList extends lf.FormItem {
 }
 
 export interface OfferingProfileLhcForm extends lf.NihLhcForm {
-  readonly name: "Product Profile";
+  readonly name: "Offering Profile";
   readonly items: [
     RespondentContactInformation,
     ProductDetails,
@@ -707,7 +707,7 @@ export async function inspectProductDetails(
     lfih.isConstrainedListItemNotSingleValue(
       offeringLicense,
       offeringLicenseCommercial,
-    )
+    ) && gitRepository.value
   ) {
     diags.onFormItemInspection(
       opf,
@@ -715,7 +715,7 @@ export async function inspectProductDetails(
       await lfih.inspectRequiredGithubURL(gitRepository.value),
       ancestors,
     );
-  } else {
+  } else if (gitRepository.value) {
     diags.onFormItemInspection(
       opf,
       gitRepository,
@@ -769,42 +769,53 @@ export async function inspectSocialPresence(
    * Validate with reference source site 
    */
   const facebookLink: SocialPresenceFacebookLink = sp.items[0];
-  diags.onFormItemInspection(
-    opf,
-    facebookLink,
-    await lfih.inspectOptionalFacebookURL(facebookLink.value),
-    ancestors,
-  );
+  if (facebookLink.value) {
+    diags.onFormItemInspection(
+      opf,
+      facebookLink,
+      await lfih.inspectOptionalFacebookURL(facebookLink.value),
+      ancestors,
+    );
+  }
+
   /* Twitter URL, to be verified in Twitter
    * Validate with reference source site 
    */
   const twitterLink: SocialPresenceTwitterLink = sp.items[1];
-  diags.onFormItemInspection(
-    opf,
-    twitterLink,
-    await lfih.inspectOptionalTwitterURL(twitterLink.value),
-    ancestors,
-  );
+  if (twitterLink.value) {
+    diags.onFormItemInspection(
+      opf,
+      twitterLink,
+      await lfih.inspectOptionalTwitterURL(twitterLink.value),
+      ancestors,
+    );
+  }
+
   /* LinkedIn URL, to be verified in LinkedIn
    * Validate with reference source site 
    */
   const linkedInLink: SocialPresenceLinkedInLink = sp.items[2];
-  diags.onFormItemInspection(
-    opf,
-    linkedInLink,
-    await lfih.inspectOptionalLinkedInURL(linkedInLink.value),
-    ancestors,
-  );
+  if (linkedInLink.value) {
+    diags.onFormItemInspection(
+      opf,
+      linkedInLink,
+      await lfih.inspectOptionalLinkedInURL(linkedInLink.value),
+      ancestors,
+    );
+  }
+
   /* Instagram URL, to be verified in Instagram
    * Validate with reference source site 
    */
   const instagramLink: SocialPresenceInstagramLink = sp.items[3];
-  diags.onFormItemInspection(
-    opf,
-    instagramLink,
-    await lfih.inspectOptionalInstagramURL(instagramLink.value),
-    ancestors,
-  );
+  if (instagramLink.value) {
+    diags.onFormItemInspection(
+      opf,
+      instagramLink,
+      await lfih.inspectOptionalInstagramURL(instagramLink.value),
+      ancestors,
+    );
+  }
 
   return diags.inspectionIssues.length > 0
     ? insp.mergeDiagsIntoIssue(target, diags)

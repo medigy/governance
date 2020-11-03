@@ -1,11 +1,12 @@
 {
-    "recommendations": [
-        "denoland.vscode-deno",
-        "christian-kohler.path-intellisense",
-        "coenraads.bracket-pair-colorizer-2",
-        "shd101wyy.markdown-preview-enhanced",
-        "visualstudioexptteam.vscodeintellicode",
-        "quicktype.quicktype",
-        "axetroy.vscode-changelog-generator"
-    ]
+  "recommendations": [
+    "christian-kohler.path-intellisense",
+    "coenraads.bracket-pair-colorizer-2",
+    "shd101wyy.markdown-preview-enhanced",
+    "visualstudioexptteam.vscodeintellicode",
+    "quicktype.quicktype",
+    "axetroy.vscode-changelog-generator",
+    "humao.rest-client",
+    "denoland.vscode-deno"
+  ]
 }
