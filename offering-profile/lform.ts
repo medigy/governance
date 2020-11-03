@@ -350,7 +350,7 @@ export interface OfferingCreatedDateCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface OfferingWebsite extends lf.UniqueURLItem {
+export interface OfferingWebsite extends lf.UniqueUrlItem {
   readonly questionCode: "Q005-03";
   readonly localQuestionCode: "Q005-03";
   readonly question: "Website of the offering*";
@@ -406,7 +406,7 @@ export interface OfferingLicenseCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface OfferingGitRepository extends lf.UniqueURLItem {
+export interface OfferingGitRepository extends lf.UniqueUrlItem {
   readonly questionCode: "Q005-06";
   readonly localQuestionCode: "Q005-06";
   readonly question: "GIT repository link of the offering";
@@ -477,7 +477,7 @@ export interface SocialPresence extends lf.FormItem {
   ];
 }
 
-export interface SocialPresenceFacebookLink extends lf.UniqueURLItem {
+export interface SocialPresenceFacebookLink extends lf.UniqueUrlItem {
   readonly questionCode: "Q006-01";
   readonly localQuestionCode: "Q006-01";
   readonly question: "Facebook page of the offering";
@@ -495,7 +495,7 @@ export interface SocialPresenceFacebookLinkCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface SocialPresenceTwitterLink extends lf.UniqueURLItem {
+export interface SocialPresenceTwitterLink extends lf.UniqueUrlItem {
   readonly questionCode: "Q006-02";
   readonly localQuestionCode: "Q006-02";
   readonly question: "Twitter page of the offering";
@@ -513,7 +513,7 @@ export interface SocialPresenceTwitterLinkCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface SocialPresenceLinkedInLink extends lf.UniqueURLItem {
+export interface SocialPresenceLinkedInLink extends lf.UniqueUrlItem {
   readonly questionCode: "Q006-03";
   readonly localQuestionCode: "Q006-03";
   readonly question: "LinkedIn page of the offering";
@@ -531,7 +531,7 @@ export interface SocialPresenceLinkedInLinkCodeList extends lf.FormItem {
   readonly system: "http://loinc.org";
 }
 
-export interface SocialPresenceInstagramLink extends lf.UniqueURLItem {
+export interface SocialPresenceInstagramLink extends lf.UniqueUrlItem {
   readonly questionCode: "Q006-04";
   readonly localQuestionCode: "Q006-04";
   readonly question: "Instagram page of the offering";
