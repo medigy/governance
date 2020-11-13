@@ -8,18 +8,18 @@ import * as cm from "https://denopkg.com/shah/context-manager@v1.0.6/mod.ts";
 import * as sm from "https://denopkg.com/shah/specification-module@v1.0.6/mod.ts";
 import { shcGH } from "./deps-test.ts";
 
-const gttRepo = shcGH.GitHub.singleton.repo(
+const mggRepo = shcGH.GitHub.singleton.repo(
   { org: "medigy", repo: "governance" },
 );
-const latestTag = await gttRepo.repoLatestTag();
-if (!latestTag) {
+const mggRepoLatestTag = await mggRepo.repoLatestTag();
+if (!mggRepoLatestTag) {
   throw new Error("Unable to detect latest version of governed-text-template");
 }
 const ctx = cm.ctxFactory.projectContext(".");
 const port = 8159;
 
 const mgctl =
-  `https://denopkg.com/medigy/governance@${latestTag.identity}/mgctl.ts`;
+  `https://denopkg.com/medigy/governance@${mggRepoLatestTag.identity}/mgctl.ts`;
 
 giac.dockerTr.transformDockerArtifacts(
   {

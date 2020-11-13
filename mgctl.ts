@@ -2,10 +2,14 @@ import {
   docopt,
   govnData as gd,
   govnDataCLI as gdctl,
+  govnSvcHealth as gsh,
+  govnSvcVersion as gsv,
   httpServer as http,
   nihLhcForms as lf,
+  oakHelpers as oakH,
   path,
 } from "./deps.ts";
+import * as server from "./server.ts";
 import * as mod from "./mod.ts";
 
 const $VERSION = gdctl.determineVersion(import.meta.url, import.meta.main);
@@ -327,41 +331,32 @@ export async function httpServiceHandler(
   ctx: gd.CliCmdHandlerContext,
 ): Promise<true | void> {
   const {
-    "server": server,
+    "server": isServer,
     "--port": portSpec,
   } = ctx.cliOptions;
-  if (server) {
+  if (isServer) {
     const port = typeof portSpec === "number" ? portSpec : 8159;
-    const baseURL = `http://localhost:${port}`;
-    const verbose = ctx.isVerbose;
-    const s = http.serve({ port: port });
-    if (verbose) {
-      console.log(`Medigy Governance service running at ${baseURL}`);
-    }
-    for await (const req of s) {
-      const url = new URL(req.url, baseURL);
-      if (verbose) console.log(req.method, url.pathname);
-      // try with curl -H "Content-Type: application/json" --data @offering-profile.lhc-form.json http://localhost:8159/offering-profile/inspect/lform | jq
-      if (url.pathname.startsWith("/offering-profile/inspect/lform")) {
-        try {
-          const content = JSON.parse(
-            new TextDecoder().decode(await Deno.readAll(req.body)),
-          );
-          const lform = content as mod.offerProfile.lf.OfferingProfileLhcForm;
-          const inspector = new mod.offerProfile.lf.OfferingProfileValidator();
-          const diags = await inspector.inspect(lform);
-          req.respond(
-            {
-              body: inspector.inspectionDiagnosticsJSON
-                ? inspector.inspectionDiagnosticsJSON(diags)
-                : JSON.stringify(diags, undefined, 2),
-            },
-          );
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    }
+
+    /* TODO: Pass the proper parameters to the server.httpServiceRouter() function
+     */
+    const app = server.httpServer({
+      port: port,
+      router: server.httpServiceRouter(),
+    });
+    oakH.registerHealthRoute(app, {
+      serviceVersion: () => {
+        return $VERSION;
+      },
+      /* TODO: IF more details to be checked in the end point need to give that after the releaseID */
+      endpoint: async () => {
+        const hs = gsh.healthyService({
+          version: "1",
+          releaseID: $VERSION,
+        });
+        return gsh.healthStatusEndpoint(hs);
+      },
+    });
+    await app.listen({ port: port });
     return true;
   }
 }
