@@ -9,7 +9,7 @@ http://localhost:8159/health
 POST http://localhost:8159/offering-profile/inspect/lform HTTP/1.1
 Content-Type: application/json
 
-< /home/alan/workspaces/git.netspective.io/netspective-studios/git-ops-experiments/gitlab-automation-target/test-medigy-governance-offering-profile/Unblock Health Offering Profile v25_1_3.lhc-form.json
+< ../../../git.netspective.io/netspective-studios/git-ops-experiments/gitlab-automation-target/test-medigy-governance-offering-profile/Unblock Health Offering Profile v25_1_3.lhc-form.json
 
 ###
 
