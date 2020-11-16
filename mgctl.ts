@@ -12,7 +12,14 @@ import {
 import * as server from "./server.ts";
 import * as mod from "./mod.ts";
 
-const $VERSION = gdctl.determineVersion(import.meta.url, import.meta.main);
+export async function determineVersion(importMetaURL: string): Promise<string> {
+  return gsv.determineVersionFromRepoTag(
+    importMetaURL,
+    { repoIdentity: "medigy/governance" },
+  );
+}
+
+const $VERSION = await determineVersion(import.meta.url);
 const docoptSpec = `
 Medigy Governance Controller ${$VERSION}.
 
